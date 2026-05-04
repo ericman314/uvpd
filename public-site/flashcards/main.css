@@ -1,0 +1,156 @@
+body {
+  font-family: "Arial", sans-serif;
+}
+
+.center {
+  text-align:center;
+}
+/*
+.big {
+  font-size: 1.2em;
+}
+*/
+.screen {
+  display:none;
+}
+
+input.note {
+  width: 2em;
+  height: 2em;
+  font-size: 1.2em;
+  border: solid gray 1px;
+  background: #eee;
+  outline: none;
+  /*transition: all .2s;*/
+  
+}
+
+input.note.correct {
+  background: lime;
+/*  transform: scale(1.1);*/
+ 
+  animation-duration: 0.3s;
+  animation-name: correct;
+  animation-fill-mode: forwards;
+}
+
+input.note.incorrect {
+  background: #ff5555;
+  animation-duration: 0.2s;
+  animation-name: incorrect;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1.5;
+  animation-timing-function: linear;
+}
+
+input.finger {
+  display:none;
+  width: 2em;
+  height: 2em;
+  font-size: 1.2em;
+  border: solid gray 1px;
+  background: #eeeeee;
+  outline: none;
+  border-radius: 1em;
+}
+
+input.finger:hover {
+  background: #f7f7f7;
+  border: solid gray 2px;
+}
+
+input.finger.correct {
+  background: lime;
+/*  transform: scale(1.1);*/
+  text-indent: 0 !important;
+  animation-duration: 0.3s;
+  animation-name: correct;
+  animation-fill-mode: forwards;
+}
+
+input.finger.incorrect {
+  text-indent: 0 !important;
+  background: #ff5555;
+  animation-duration: 0.2s;
+  animation-name: incorrect;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1.5;
+  animation-timing-function: linear;
+}
+
+input.finger:not([data-row='0']) {
+  text-indent: -99999px;
+}
+
+
+@keyframes correct {
+  0% {
+    box-shadow: 0px 0px 10px 0px rgba(0,255,0,1);
+    transform: scale(1.0);
+  }
+  
+  50% {
+    transform: scale(1.15);
+  }
+  
+  100% {
+    box-shadow: 0px 0px 10px 15px rgba(0,255,0,0);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes incorrect {
+  0% {
+    transform: translate(0, 0);
+  }
+  
+  25% {
+    transform: translate(-0.15em, 0);
+  }
+  
+  75% {
+    transform: translate(0.15em, 0);
+  }
+  
+  100% {
+    transform: translate(0, 0);
+  }
+
+}
+
+
+input.note:disabled, input.finger:disabled {
+  color: black;
+}
+
+#playScreenFingers table tr {
+  background: goldenrod;
+}
+
+#playScreenFingers table tr:nth-child(1) {
+  background: transparent;
+}
+
+#playScreenFingers table tr:nth-child(1) td {
+  background: none;
+  border-bottom: solid black 2px;
+}
+
+#playScreenFingers td {
+  background-image: url('2x1_bk.png');
+  background-repeat: repeat-y;
+  background-position: center;
+}
+
+td {
+  padding: 0.2em;
+  width: 2em;
+  height: 2em;
+}
+
+table {
+  border-collapse: collapse;
+  border: none;
+}
+
+

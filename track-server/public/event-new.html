@@ -1,0 +1,60 @@
+<div class="modal-header">
+  <h3 class="modal-title">{{options.heading}}</h3>
+</div>
+
+<form name="newEvent" novalidate>
+  
+<div class="modal-body" style="max-height:50%; overflow-y: auto;">
+
+  <fieldset class="form-group" ng-class="{ 'has-error' : newEvent.name.$invalid && newEvent.name.$touched}">
+    <label for=name>Event Name</label>
+    <input type="text" class="form-control" id="name" name="name" ng-model='model.name' required>
+    <p ng-show="newEvent.name.$invalid && newEvent.name.$touched" class="help-block">Event name is required.</p>
+  </fieldset>
+  
+  <fieldset class="form-group" ng-class="{ 'has-error' : newEvent.multiplier.$invalid && newEvent.multiplier.$touched}">
+    <label for=multiplier>Number of Runs</label>
+    <input type="number" class="form-control" id="multiplier" name="multiplier" ng-model='model.multiplier' required min=1 max=100 ngStep=1>
+    <p class="help-block">Number of times each car will run.<span ng-show="newEvent.multiplier.$invalid && newEvent.multiplier.$touched"> Must be a number between 1 and 100.</span></p>
+  </fieldset>
+  
+  <fieldset class="form-group" ng-class="{ 'has-error' : newEvent.date.$invalid && newEvent.date.$touched}">
+    <label for=date>Event Date</label>
+    
+    <div class="input-group">
+      <input type="text" name="date" class="form-control" ng-model="model.date" date-time-input="MM/DD/YYYY" placeholder="mm/dd/yyyy" required>
+      <div class="input-group-btn dropup" uib-dropdown is-open="newEventFormDatePickerOpen">
+        <button type="button" uib-dropdown-toggle class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">&nbsp;<span class="caret"></span></button>
+        <ul uib-dropdown-menu class="dropdown-menu-right">
+          <datetimepicker ng-show="true" ng-model="model.date" data-datetimepicker-config="{minView: 'day', startView: 'day' }" data-on-set-time="onTimeSet(newDate, oldDate)"></datetimepicker>
+        </ul>
+      </div>
+    </div>
+    <p ng-show="newEvent.date.$invalid && newEvent.date.$touched" class="help-block">Please enter a valid date.</p>
+  </fieldset>
+  
+<!--  
+  <a href ng-click="showAdvanced = !showAdvanced">Advanced</a>
+  <div uib-collapse="!showAdvanced">
+    <fieldset class="form-group">
+      Show live results on race screen
+      <div class="btn-group">
+        <label class="btn btn-info" ng-model='model.options.hideLiveResults' uib-btn-radio="false" >Show</label>
+        <label class="btn btn-info" ng-model='model.options.hideLiveResults' uib-btn-radio="true"  >Hide</label>
+      </div>  
+    </fieldset>
+    
+  </div>
+-->
+</div>
+
+<div class="modal-footer">
+  <!--<span ng-show="selected.item">Selected: <b>{{selected.items}}</b>&nbsp;&nbsp;</span>-->
+  <!--<button class="btn btn-primary" type="button" ng-click="ok()" ng-disabled="selected.items.length === 0">OK</button>-->
+  
+  <input type=submit name=submit class="btn btn-primary" ng-click="commit()" ng-disabled="newEvent.$invalid" ng-value='options.okButton'>
+
+  <input type=button class="btn" ng-click="close()" value="Cancel">
+</div>
+</form>
+

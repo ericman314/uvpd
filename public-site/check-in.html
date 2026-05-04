@@ -1,0 +1,482 @@
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <meta name="description"
+    content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+
+  <title>Utah Valley Pinewood Derby - Check In</title>
+  <!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+  <link rel="stylesheet" href="main.css?v=3">
+  <link rel="icon" type="image/png" href="favicon.ico">
+  <style>
+    .inputfile {
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .inputfile+label {
+      background: #AD431F;
+      padding: 8px;
+      color: #fff7f0;
+      font-weight: 300;
+      border: none;
+      display: inline-block;
+    }
+
+    .inputfile+label:hover {
+      color: white;
+      background: #e05520;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+/* 
+    #modal-example {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    #modal-example-container {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      right: 20px;
+      bottom: 20px;
+      border: solid black 2px;
+      background: white;
+      padding: 0 10px;
+    } */
+
+    .preview-wrapper {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    #preview {
+      display: none;
+      width: 100%;
+    }
+
+    .preview {
+      display: none;
+      height: 0;
+      padding-top: 75%;
+      background: red;
+      background-size: contain;
+      /* Any mistakes in cropping will be visible */
+      background-position: center center;
+      width: 100%;
+    }
+
+    input#submit {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+
+    .check-in-form-singlepage {
+      display: none;
+    }
+
+    .no-events-message {
+      display: none;
+    }
+
+    .choose-event {
+      display: none;
+    }
+
+    .choose-event-prompt {
+      display:none;
+    }
+
+    .event-choices {
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    .event-choices input {
+      /* Hide radio buttons */
+      display: none;
+    }
+
+    .event-choices input + div {
+      padding: 8px;
+      background: white;
+      border: solid #777 1px;
+      transition: background 0.3s;
+    }
+
+    .event-choices div:not(:last-child) input + div {
+      border-bottom: none;
+    }
+
+    .event-choices input:checked + div {
+      background: #64b5f6;
+      font-weight:bold;
+    }
+
+    .please-wait {
+      display:none;
+    }
+
+  </style>
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+
+<body id="top">
+  <!--#include virtual="/nav.shtml"-->
+
+
+  <div class="pageContent center">
+
+    <h1 class="center">Race Check-In</h1>
+
+    
+
+    <p class=center><b>Check your car into the race</b></p>
+
+    <p class="events-loading">Loading events...</p>
+
+    <p class="no-events-message"><i>Sorry, there were no events found.</i></p>
+
+
+
+    <form method="POST" action="/api/v3/checkin" enctype="multipart/form-data" accept-charset="utf-8">
+
+      <div class="choose-event">
+        <p class="choose-event-prompt">Choose an event:</p>
+        <div class="event-choices"></div>
+      </div>
+
+      <div class="check-in-form-singlepage">
+        <p>Your first name:</p>
+        <p><input type="text" id="name" name="name"
+            style="width:100%; max-width: 360px; margin: 0 auto; display: block;" />
+        </p>
+
+        <!-- <p>Den or group:</p>
+                <p class="small">For example: Wolf, Bear, Webelos, Boys, Girls, etc.</p>
+                <p><input id="den" type="text" name="den" style="width:100%; max-width: 360px; margin: 0 auto; display: block;" />
+                </p> -->
+
+        <p>Your car's name:</p>
+        <p><input id="nickname" type="text" name="nickname"
+            style="width:100%; max-width: 360px; margin: 0 auto; display: block;" /></p>
+
+        <p>Attach a photo of your car:</p>
+
+        <div class='preview-wrapper'>
+          <!-- <div class='preview'></div> -->
+          <img id="preview" />
+        </div>
+
+        <input id="resizedImage" name="photo" type="hidden" value="">
+
+        <p><input type="file" id="inputfile" accept="image/*" capture="environment" class="inputfile" />
+          <label for="inputfile" id="inputfile-label">Attach photo</label>
+        </p>
+
+        <br />
+
+        <p><i>Your name and photo of your car will be posted online.</i></p>
+        <p class='please-wait'>Submitting car, please wait...</p>
+        <input type="submit" id="submit" name="submit" value="Submit" disabled class="disabled" />
+
+      </div>
+    </form>
+
+  </div>
+<!-- 
+  <div id="modal-example">
+    <div id="modal-example-container">
+      <p>Place your car on a plain, flat surface.</p>
+      <p>Shoot in landscape for best results.</p>
+      <p>Center the car in the frame.</p>
+      <p>Your photo will be cropped to 4:3.</p>
+      <img src="img/car-photo-example.jpg" />
+      <p class="center" style="color:#888; position: fixed; left: 0; bottom: 20; text-align:center; width: 100%">
+        &#x2715; Close</p>
+    </div>
+  </div> -->
+
+  <script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+  <script>
+
+  function sanitize(string) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        "/": '&#x2F;',
+    };
+    const reg = /[&<>"'/]/ig;
+    return string.replace(reg, (match)=>(map[match]));
+  }
+
+    var availableEvents = []
+
+    $(function () {
+
+      $.get("/api/v3/events?dayStart=0&dayEnd=9", function (data) {
+        availableEvents = data;
+        $('.events-loading').hide()
+        if (availableEvents.length === 0) {
+          $('.no-events-message').show()
+        } else{
+          if (availableEvents.length === 1) {
+            let event = availableEvents[0]  
+              $('.event-choices').append(`<div><label><input type='radio' checked name='checkInEventId' value='${event.eventId}'/> <div>${event.eventName}</div></label></div>`)
+              $('.check-in-form-singlepage').show()
+          } else {
+            for (let event of availableEvents) {
+              $('.event-choices').append(`<div><label><input type='radio' name='checkInEventId' value='${event.eventId}'/> <div>${event.eventName}</div></label></div>`)
+            }
+            $('.choose-event-prompt').show()
+          }
+          $('.choose-event').show()
+        }
+
+        
+        console.log(availableEvents)
+      });
+
+      $(document).on('input', '.event-choices input', function(e) {
+        $('.check-in-form-singlepage').show()
+      })
+
+      $(document).ready(function () {
+        $('input').keypress(function (e) {
+          var code = (e.keyCode ? e.keyCode : e.which);
+          if ((code == 13) || (code == 10)) {
+            $(this).blur();
+            return false;
+          }
+        });
+      });
+
+      function checkInputs() {
+        if ($('#name').val().trim() !== '' && $('#resizedImage').val() !== '') {
+          $('#submit').removeClass('disabled')
+          $('#submit').attr('disabled', false)
+        } else {
+          $('#submit').addClass('disabled')
+          $('#submit').attr('disabled', true)
+        }
+
+      }
+
+      $('form').submit(function(){
+        $('#submit').val('Submitting...')
+        $('#submit').addClass('disabled')
+        $('input[type=submit]', this).attr('disabled', 'disabled');
+      });
+
+      $(document).on('input', '#name', function (e) {
+        checkInputs()
+      })
+
+      $('#see-example').on('click', function (e) {
+        $('#modal-example').show();
+      })
+
+      $('#modal-example').on('click', function (e) {
+        $('#modal-example').hide();
+      })
+
+      $('#inputfile').change(function (e) {
+        console.log(e.target.value)
+        var filename = e.target.value.split('\\').pop()
+        if (!filename) {
+          $('#inputfile-label').text('Attach photo')
+          $('#resizedImage').val('')
+          $('#preview').hide()
+          checkInputs()
+        } else {
+          $('#inputfile-label').text('Change photo')
+          $('#resizedImage').val('')
+
+          // Get orientation of image
+          getOrientation(e.target.files[0], function (orientation) {
+
+            // alert(orientation)  // Easy debug for mobile
+
+            // Step 1: Correct orientation, then save to canvas1
+            // Step 2: Crop and resize. Save to canvas2.
+
+
+            // Resize image
+            var reader = new FileReader();
+            reader.onload = function (readerEvent) {
+              var image = new Image()
+              image.onload = function (imageEvent) {
+                var canvas1 = document.createElement('canvas')
+
+                // If rotating by +/-90 deg, swap width and height of destination canvas.
+                if (orientation >= 5 && orientation <= 8) {
+                  canvas1.width = image.height
+                  canvas1.height = image.width
+                } else {
+                  canvas1.width = image.width
+                  canvas1.height = image.height
+                }
+
+                var ctx = canvas1.getContext('2d')
+
+                // transform context before drawing image
+                switch (orientation) {
+                  case 2: ctx.setTransform(-1, 0, 0, 1, image.width, 0); break;
+                  case 3: ctx.setTransform(-1, 0, 0, -1, image.width, image.height); break;
+                  case 4: ctx.setTransform(1, 0, 0, -1, 0, image.height); break;
+                  case 5: ctx.setTransform(0, 1, 1, 0, 0, 0); break;
+                  case 6: ctx.setTransform(0, 1, -1, 0, image.height, 0); break;
+                  case 7: ctx.setTransform(0, -1, -1, 0, image.height, image.width); break;
+                  case 8: ctx.setTransform(0, -1, 1, 0, 0, image.width); break;
+                  default: break;
+                }
+
+                canvas1.getContext('2d').drawImage(image, 0, 0)
+
+                // Crop and resize the oriented image so that it covers a 640x480 canvas, centered
+
+                var canvas2 = document.createElement('canvas')
+                var dx = 0, dy = 0, dw = 640, dh = 480
+                canvas2.width = dw
+                canvas2.height = dh
+
+                // Either sx = 0 and sw = canvas1.width, OR
+                // sy = 0 and sh = canvas1.height.
+                var sx = 0, sy = 0, sw = canvas1.width, sh = canvas1.height
+                if (sw / sh > dw / dh) {
+                  // Source image aspect ratio is wider than destination.
+                  sy = 0
+                  sh = canvas1.height
+                  sw = sh * dw / dh   // Aspect ratios must match after the transform: sw / sh = dw / dh
+                  sx = (canvas1.width - sw) / 2
+                } else {
+                  // Source image aspect ratio is taller than destination.
+                  sx = 0
+                  sw = canvas1.width
+                  sh = sw * dh / dw   // Aspect ratios must match after the transform: sw / sh = dw / dh
+                  sy = (canvas1.height - sh) / 2
+                }
+
+                canvas2.getContext('2d').drawImage(canvas1, sx, sy, sw, sh, dx, dy, dw, dh)
+
+                var dataUrl = canvas2.toDataURL('image/jpeg', 0.9)
+                $('#resizedImage').val(dataUrl)
+                // $('.preview').css('background-image', 'url("' + dataUrl + '")')
+                $('#preview').attr('src', dataUrl)
+                $('#preview').show()
+                checkInputs()
+              }
+              image.src = readerEvent.target.result
+            }
+            reader.readAsDataURL(e.target.files[0])
+          })
+
+        }
+      })
+
+    })
+
+    function getOrientation(file, callback) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+
+        var view = new DataView(e.target.result);
+        if (view.getUint16(0, false) != 0xFFD8) {
+          return callback(-2);
+        }
+        var length = view.byteLength, offset = 2;
+        while (offset < length) {
+          if (view.getUint16(offset + 2, false) <= 8) return callback(-1);
+          var marker = view.getUint16(offset, false);
+          offset += 2;
+          if (marker == 0xFFE1) {
+            if (view.getUint32(offset += 2, false) != 0x45786966) {
+              return callback(-1);
+            }
+
+            var little = view.getUint16(offset += 6, false) == 0x4949;
+            offset += view.getUint32(offset + 4, little);
+            var tags = view.getUint16(offset, little);
+            offset += 2;
+            for (var i = 0; i < tags; i++) {
+              if (view.getUint16(offset + (i * 12), little) == 0x0112) {
+                return callback(view.getUint16(offset + (i * 12) + 8, little));
+              }
+            }
+          }
+          else if ((marker & 0xFF00) != 0xFF00) {
+            break;
+          }
+          else {
+            offset += view.getUint16(offset, false);
+          }
+        }
+        return callback(-1);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+
+    function resetOrientation(srcBase64, srcOrientation, callback) {
+      var img = new Image();
+
+      img.onload = function () {
+        var width = img.width,
+          height = img.height,
+          canvas = document.createElement('canvas'),
+          ctx = canvas.getContext("2d");
+
+        // set proper canvas dimensions before transform & export
+        if (4 < srcOrientation && srcOrientation < 9) {
+          canvas.width = height;
+          canvas.height = width;
+        } else {
+          canvas.width = width;
+          canvas.height = height;
+        }
+
+        // transform context before drawing image
+        switch (srcOrientation) {
+          case 2: ctx.transform(-1, 0, 0, 1, width, 0); break;
+          case 3: ctx.transform(-1, 0, 0, -1, width, height); break;
+          case 4: ctx.transform(1, 0, 0, -1, 0, height); break;
+          case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+          case 6: ctx.transform(0, 1, -1, 0, height, 0); break;
+          case 7: ctx.transform(0, -1, -1, 0, height, width); break;
+          case 8: ctx.transform(0, -1, 1, 0, 0, width); break;
+          default: break;
+        }
+
+        // draw image
+        ctx.drawImage(img, 0, 0);
+
+        // export base64
+        callback(canvas.toDataURL());
+      };
+
+      img.src = srcBase64;
+    };
+
+  </script>
+  <!--#include virtual="/footer.shtml"-->
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+   
+  <div class="standout center" ng-show="showLoading">
+    <p class=big>Loading. Please wait...</p>
+    <p style='font-size:80%;' ng-show="showServerNotResponding" ng-cloak>This is taking longer than usual. Stats might not be available right now. Sorry!</p>
+  </div>
+  
+  <div class="standout center" ng-show="showLogin" ng-cloak>
+    <p class=big>Event code:</p>
+    <input id=eventCodeInput type=text ng-model-options="{ updateOn: 'change blur' }" ng-change="eventCodeChanged()" ng-model="eventCode">
+    <p class=big ng-show="showEventCodeNotFound">Sorry, couldn't find that event.</p>
+    <p>The event code is displayed on the main leaderboard.</p>
+  </div>
+  
+  <div class="standout center" ng-show="showEventDetails" ng-cloak>
+    <button style="background:transparent; border:none; font-family: 'Open Sans'; color:#ddd; cursor: pointer;" ng-click="chooseAnotherEvent()">Choose another event</button>
+    
+    <p class=big style="font-weight: normal;">{{getEventName()}}</p>
+    <p>{{getEventDate()}}</p>
+    
+    <div class="board" ng-repeat="board in boards">
+    <div class="boardHeading">{{board.Name}}</div>
+    <table class="results">
+      <tr class=rowheading>
+        <td>Car</td>
+        <td style="font-weight:bold;"><span>Best Time</span></td>
+        <td class=showNarrow><span class=showNarrow> </span></td>
+        <td class=showWide>Lane 1</td>
+        <td class=showWide>Lane 2</td>
+        <td class=showWide>Lane 3</td>
+        <td class=showWide>Lane 4</td>
+      </tr>
+      <tr class=resultsRow ng-repeat="car in board.cars">
+        <td>{{car.Name}}</td>
+        <td><b ng-show="car.BestTime < 100000">{{car.BestTime}}</b></td>
+        <td class="showWide" ng-repeat="time in car.Times track by $index">{{time}}</td>
+        <td class="showNarrow" ng-bind-html="joinWithBr(car.Times)">
+        </td>
+      </tr>
+    </table>
+  </div>
+  

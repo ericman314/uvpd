@@ -1,0 +1,19 @@
+<h1>Events</h1>
+
+<button class="btn btn-primary" ng-click="newEvent()">New Event</button>
+
+<div class="btn-group" uib-dropdown>
+  <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+    Action <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" uib-dropdown-menu>
+    <li><a href="#" ng-click="replicateDB()">Replicate DB</a></li>
+  </ul>
+</div>
+
+<br><br>
+<p ng-repeat="event in eventList | orderBy: 'eventDate' : true track by $index">
+  <a ui-sref="event-details({eventId:event.eventId})">{{event.eventName}} &mdash; {{event.eventDate | date:"MMM dd, yyyy"}}</a>
+</p>
+
+<a ui-sref="calibrate">Calibrate Scale</a>

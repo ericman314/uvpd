@@ -1,0 +1,113 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+  <meta name="description" content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+
+	<title>Utah Valley Pinewood Derby</title>
+	<!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+	<link rel="stylesheet" href="main.css?v=3">
+	<link rel="icon" type="image/png" href="favicon.ico">
+	
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+	
+
+<body class=home>
+<div class=header>
+		<a href="/">
+			<img src="img/logo-color-flat.png">
+		</a>
+		<div class=subtitle><span>Pinewood Derby Track Rental in Utah County</span></div>
+  </div>
+  
+  
+  <picture>
+    <source
+      media="(orientation:landscape)"
+      srcset="img/home-landscape-1920.jpg 1920w,
+              img/home-landscape-1280.jpg 1280w,
+              img/home-landscape-960.jpg 960w,
+              img/home-landscape-640.jpg 640w"
+              />
+    <source
+      srcset="img/home-portrait-960.jpg 960w,
+              img/home-portrait-640.jpg 640w,
+              img/home-portrait-320.jpg 320w,
+              img/home-portrait-480.jpg 480w"
+              />
+    <img style="position:absolute; z-index:-1; width:100%;" src="img/home-landscape-1920.jpg">
+  </picture>
+  
+  
+	<br>
+
+  <div id=live-results class=pageContent-home style="display:none;">
+    <br>
+    <img src="img/checker-flag.png" style="float:right; width:100px; transform: scale(-1,1);">
+    <img src="img/checker-flag.png" style="float:left; width:100px;">
+    <h3>View Results</h3>
+    <ul id=live-results-list>
+    </ul>
+    
+    <br>
+  </div>
+  
+	<div class=pageContent-home>
+  <br>
+  
+ 
+  
+		<div class=standout-home>
+      <!--<p class="center big" style="font-size:150%;">
+        Now accepting reservations.
+      </p>-->
+      
+      <p class="center big" style="line-height: 200%;">
+        <a href="reservations.html" class=button onclick="return showReservationForm();">Make a reservation</a>
+        <span style="font-size: 20pt; font-weight: 400; display: inline-block; margin:0 20px;">
+          $100
+        </span>
+      </p>
+      
+      <p class="center">
+				Includes travel to your site, setup, weigh-in, and racing. We'll bring all the equipment.
+			</p>
+      
+      <p class="center">
+        <a href="learn-more.html"><b>Learn More</b></a>
+      </p>
+      
+      <p class="center">
+        <a href="https://www.facebook.com/UtahValleyPinewoodDerby/" target="_blank" style="font-size: 85%"><img src="img/fb-art.png" style="width:20px; vertical-align:bottom;"><span style="inline-block; margin-left:4px;">Find us on Facebook</span></a>
+      </p>
+    
+		</div>
+			
+      <br>
+		
+	</div>
+  
+  <script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+  <script>
+    $(function() {
+    
+      $.get("/api/v2/recentEvents", function(data) {
+        
+        if(data.length > 0) {
+          
+          for(var i=0; i<data.length; i++) {
+            console.log(data[i].Name, data[i].ResultsURL);
+            //$('ul#live-results-list').append('<li><a href="' + data[i].ResultsURL + '">' + data[i].Name + '</a></li>');
+            $('ul#live-results-list').append('<li><a href="/live-results.html">' + data[i].Name + '</a></li>');
+          }
+          
+          
+          $('#live-results').show();
+        }
+      });
+      
+    });
+  </script>
+  
+</body>
+</html>

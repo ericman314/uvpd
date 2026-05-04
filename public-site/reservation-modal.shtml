@@ -1,0 +1,54 @@
+<!--
+
+<div class=modalWrapper id=reservationForm onclick="hideReservationForm();">
+  <div class=modalInnerWrapper>
+    <iframe class=modal src="https://docs.google.com/forms/d/e/1FAIpQLSeltFzaGPqtZyB8LaaBQ-hS-HcjGLTheiwkrX9eXTXhkMVKbA/viewform?embedded=true" frameborder="0" >Loading...</iframe>
+  </div>
+</div>
+
+
+<script>
+  function showReservationForm() {
+    document.getElementById('reservationForm').className = "modalWrapper visible";
+    document.body.className += " modal-open";
+    window.history.pushState("modal", "Make a Reservation", "#reservation");
+    return false;
+  }
+  
+  function hideReservationForm() {
+    document.getElementById('reservationForm').className = "modalWrapper";
+    document.body.className = document.body.className.replace(/\bmodal-open\b/,'');
+    window.history.back();
+    return false;
+  }
+    
+  window.onpopstate = function(event) {
+    
+    if(event.state === "modal") {
+      document.getElementById('reservationForm').className = "modalWrapper visible";
+      document.body.className += " modal-open";
+    }
+    else
+    {
+      document.getElementById('reservationForm').className = "modalWrapper";
+      document.body.className = document.body.className.replace(/\bmodal-open\b/,'');
+    }
+  };
+  
+  window.onload = function(event) {
+    if(window.location.hash === "#reservation") {
+      document.getElementById('reservationForm').className = "modalWrapper visible";
+      document.body.className += " modal-open";
+      // Modify stack so if user presses back button, the modal is closed
+      window.history.replaceState("", "", "");
+      window.history.pushState("modal", "", "#reservation");
+    }
+  };
+  
+  window.onbeforeunload = function() {
+    document.querySelector('body:not(.modal-open) iframe').remove();
+  };
+  
+</script>
+
+-->

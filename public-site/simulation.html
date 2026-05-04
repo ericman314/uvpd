@@ -1,0 +1,465 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+  <meta name="description" content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+
+	<title>Utah Valley Pinewood Derby - Simulator</title>
+	<!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+	<link rel="stylesheet" href="main.css?v=2">
+	<link rel="icon" type="image/png" href="favicon.ico">
+	<style>
+    .input-group label {
+      width: 200px;
+      display: inline-block;
+    }
+    
+    .input-group input[type=text] {
+      width:100px;
+    }
+  </style>
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+
+<body class=home>
+<!--#include virtual="/nav.shtml"-->
+  
+	
+		<div class=pageContent>
+
+     
+			<h1>Pinewood Derby Simulator</h1>
+      <p><a class="caption" href="about-simulation">Learn more about this simulator</a></p>
+      Drag the sliders to simulate a pinewood derby car rolling down a track. At the bottom, the kinetic and potential energy of the car is plotted at each point on the track. What factors have the biggest effect on the car's time? 
+			<p><b>Parameters</b></p>
+      <input type="button" value="Reset all" onclick="resetDefaults();">
+      
+      <p>TRACK</p>
+      <div class=input-group title="The track length is the horizontal distance between the starting gate and the finish line">
+        <label for=track-length-value>Track Length (ft)</label>
+        <input id=track-length-value type="text">
+        <input id=track-length-slider type="range" min="24" max="48">
+      </div>
+      <div class=input-group title="The track height is the height of the track above the ground at the starting gate">
+        <label for=track-height-value>Track Height (in)</label>
+        <input id=track-height-value type="text">
+        <input id=track-height-slider type="range" min="36" max="60">
+      </div>
+      <div class=input-group title="Level-off distance is the horizontal distance between the starting gate and the point at which the track completely levels off">
+        <label for=track-level-off-value>Track level-off distance (ft)</label>
+        <input id=track-level-off-value type="text">
+        <input id=track-level-off-slider type="range" min="12" max="20">
+      </div>
+      <div class=input-group title="Grade is the slope of the floor the track is set on. Positive slopes upward; negative slopes downward.">
+        <label for=track-groundslope-value>Grade (%)</label>
+        <input id=track-groundslope-value type="text">
+        <input id=track-groundslope-slider type="range" min="-1" max="1" step="0.1">
+      </div>
+      
+      
+      <p>CAR</p>
+      <div class=input-group title="The combined weight of the car and all wheels">
+        <label for=car-weight-value>Car weight (oz)</label>
+        <input id=car-weight-value type="text">
+        <input id=car-weight-slider type="range" min="2" max="8" step="0.1">
+      </div>
+      <div class=input-group title="The distance between the car's center of mass and the front of the car">
+        <label for=car-com-value>Center-of-mass (in)</label>
+        <input id=car-com-value type="text">
+        <input id=car-com-slider type="range" min="0" max="7" step="0.0625">
+      </div>
+<!--       
+      <div class=input-group title="The resistance of a wheel rolling over a flat surface.">
+        <label for=car-rr-value>Rolling Resistance</label>
+        <input id=car-rr-value type="text">
+        <input id=car-rr-slider type="range" min="0.0" max="4" step="1">
+      </div>
+      <div class=input-group title="The resistance of a wheel rolling over a flat surface.">
+        <label for=car-war-value>Wheel-Axle Resistance</label>
+        <input id=car-war-value type="text">
+        <input id=car-war-slider type="range" min="0.0" max="4" step="1">
+      </div>
+      <div class=input-group title="How susceptible the car is to wobbling back and forth or running into the guide strip.">
+        <label for=car-sf-value>Side-Fumbling</label>
+        <input id=car-sf-value type="text">
+        <input id=car-sf-slider type="range" min="0.0" max="4" step="1">
+      </div> -->
+      <div class=input-group title="The combined effects of rolling resistance, wheel-axle resistance, and side-fumbling.">
+        <label for=car-war-value>Friction</label>
+        <input id=car-war-value type="text">
+        <input id=car-war-slider type="range" min="0" max="4" step="1">
+      </div>  
+      <div class=input-group title="The drag of the car and wheels. Uncut block: approximately 0.8">
+        <label for=car-drag-value>Drag coefficient</label>
+        <input id=car-drag-value type="text">
+        <input id=car-drag-slider type="range" min="0.0" max="1" step="0.1">
+      </div>
+      <div class=input-group title="The number of wheels in contact with the track surface. For one raised wheel, decrease this to 3." >
+        <label for=car-nwheels-value>Number of wheels</label>
+        <input id=car-nwheels-value type="text">
+        <input id=car-nwheels-slider type="range" min="3" max="6">
+      </div>
+      <div class=input-group title="The mass of one wheel (not including the nail)">
+        <label for=car-mwheel-value>Mass of one wheel (oz)</label>
+        <input id=car-mwheel-value type="text">
+        <input id=car-mwheel-slider type="range" min="0.0" max="0.2" step="0.01">
+      </div>
+      <div class=input-group title="The diameter of one wheel">
+        <label for=car-dwheel-value>Wheel diameter (in)</label>
+        <input id=car-dwheel-value type="text">
+        <input id=car-dwheel-slider type="range" min="0.5" max="2" step="0.0625">
+      </div>
+
+      <br/>
+      <!-- <input type="button" value="Run" onclick="start();"/> -->
+      
+      <p><b>Result</b></p>
+
+      
+
+      <div id="result"></div>
+
+      <canvas id='energy-plot' height=400 style="width:100%; height: 400px;"></canvas>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+      <script src="rk4.js"></script>
+      <script>
+
+        
+        // Plot data
+        var datapot = [];
+        var dataklin = [];
+        var datakrot = [];
+        var datatotal = [];
+        var chart;
+
+        let requestStartTimeout;
+      
+        const frictions = ['None', 'Low', 'Medium', 'High', 'Very High'];
+
+        var inputs = getDefaults();
+        
+        var inputsFromStorage = localStorage.getItem("inputs");
+        if(inputsFromStorage) {
+          inputsFromStorage = JSON.parse(inputsFromStorage);
+          for(var i in inputsFromStorage) {
+            inputs[i] = inputsFromStorage[i];
+          }            
+        }
+        updateValues(inputs);
+        
+        function getDefaults() {
+          return {
+            "track-length": 32,
+            "track-height": 48,
+            "track-level-off": 16,
+            "track-groundslope": 0,
+            "car-weight": 5,
+            "car-nwheels": 4,
+            "car-mwheel": 0.1,
+            "car-dwheel": 1.1875,
+            "car-drag": 0.4,
+            //"car-rr": 2,
+            "car-war": 2,
+            //"car-sf": 2,
+            "car-com": 3.5
+          };
+        }
+        
+        function resetDefaults() {
+          inputs = getDefaults();
+          updateValues();
+        }
+        
+        
+
+        function updateValues() {
+          for(var i in inputs) {
+            //console.log(i);
+            document.getElementById(i + '-slider').value = inputs[i];
+            if(i === 'car-rr' || i === 'car-war' || i === 'car-sf') {
+              document.getElementById(i + '-value').value = frictions[inputs[i]]; 
+            }
+            else {
+              document.getElementById(i + '-value').value = inputs[i];
+            }
+          }
+          localStorage.setItem("inputs", JSON.stringify(inputs));
+          requestStart();
+        }
+        
+        for(var i in inputs) {
+          (function(inp, def) {
+            document.getElementById(inp + '-slider').value = def;
+            if(inp === 'car-rr' || inp === 'car-war' || inp === 'car-sf') {
+              document.getElementById(inp + '-value').value = frictions[def]; 
+            }
+            else {
+              document.getElementById(inp + '-value').value = def;
+            }
+            
+            document.getElementById(inp + '-slider').addEventListener("input", function() {
+              if(inp === 'car-rr' || inp === 'car-war' || inp === 'car-sf') {
+                document.getElementById(inp + '-value').value = frictions[this.value]; 
+              }
+              else {
+                document.getElementById(inp + '-value').value = this.value;
+              }
+              inputs[inp] = this.value;
+              localStorage.setItem("inputs", JSON.stringify(inputs));
+              requestStart();
+            });
+            document.getElementById(inp + '-value').addEventListener("input", function() {
+              document.getElementById(inp + '-slider').value = this.value;
+              inputs[inp] = this.value;
+              localStorage.setItem("inputs", JSON.stringify(inputs));
+              requestStart();
+            });
+          })(i, inputs[i]);
+        }
+
+
+        function requestStart() {
+          if(requestStartTimeout) {
+            clearTimeout(requestStartTimeout);
+          }
+          requestStartTimeout = setTimeout(start, 500);
+        }
+
+        function start() {
+
+          let timestamp = Date.now();
+
+          const Ltot = parseFloat(document.getElementById('track-length-value').value) * 0.3048;
+          const H = parseFloat(document.getElementById('track-height-value').value) * 0.0254;
+          const L = parseFloat(document.getElementById('track-level-off-value').value) * 0.3048;
+          const slope = parseFloat(document.getElementById('track-groundslope-value').value) * 0.01;
+
+
+          // Convert all parameters to SI units
+          const m = parseFloat(document.getElementById('car-weight-value').value) * 0.028349523125
+          const g = 9.8;
+          const mwheel = parseFloat(document.getElementById('car-mwheel-value').value) * 0.028349523125
+          const rwheel = parseFloat(document.getElementById('car-dwheel-value').value) / 2 * 0.0254
+          const nwheels = parseFloat(document.getElementById('car-nwheels-value').value)
+          // Approximating wheel as a disc
+          const Iwheel = 0.5 * mwheel * rwheel*rwheel;
+
+          const com = parseFloat(document.getElementById('car-com-value').value) * 0.0254;
+
+          const Cd = parseFloat(document.getElementById('car-drag-value').value);
+
+          //const rr = parseFloat(inputs["car-rr"]) * 0.001;          // 0.000, 0.001, 0.002, 0.003, 0.004
+          //const war = parseFloat(inputs["car-war"])**2 * 0.002;     // 0.000, 0.002, 0.008, 0.018, 0.032
+          //const sf = parseFloat(inputs["car-sf"])**2 * 0.003;       // 0.000, 0.003, 0.012, 0.027, 0.048
+
+          const war = parseFloat(inputs["car-war"])**2 * 0.004;     // 0.000, 0.004, 0.016, 0.036, 0.064
+
+          /* How does com work?
+           * Rather than adjust the equations of motion, we just adjust the reference frame.
+           * The starting position of the car is moved backwards into negative x, and thus higher track elevation, by an arc-length equal to com. The finish line of the track is also moved closer by an arc-length of com.
+           */
+
+          // Function for track shape
+          const w = function(x) {
+            if(x > L) return 0 + slope * x;
+            else return -H/(L**4)*(x+L)*(x-L)**3 + slope * x;
+          }
+          const dw = function(x) {
+            if(x > L) return slope;
+            else return -H/(L**4)*2*(x-L)**2*(L+2*x) + slope;
+          }
+          const d2w = function(x) {
+            if(x > L) return 0;
+            else return -H/(L**4)*12*x*(x-L);
+          }
+
+          // Determine x for which the track length is equal to Ltot (it will be <= Ltot)
+          let arc = 0;
+          let larc;
+          let lx;
+          let xf;
+          let dx = 0.1;
+          for(var x = 0; x< Ltot; x+=0.1) {
+            arc += dx * Math.sqrt(1+dw(x)**2);
+            if(arc > Ltot) {
+              // Interpolate between (lx, larc) and (x, arc) to find (xf, Ltot)
+              xf = (Ltot - larc) / (arc - larc) * (x - lx) + lx;
+              break;
+            }
+            lx = x;
+            larc = arc;
+          }
+
+          // Function for car acceleration
+          const d2x = function(x, dx) {
+            let dwx = dw(x);
+            let d2wx = d2w(x);
+            let v = -dx * dw(x);
+            let normalforce = (g + dx*dx * d2wx) / Math.sqrt(1+dwx*dwx) * m;  // Both contributions to the normal force share the 1 / Math.sqrt(...) factor
+            //let fricforce = normalforce * (rr + war) + sf * v;    // TODO: Make side-fumbling proportional to v, since there is more fumbling the faster it's going?
+            let fricforce = normalforce * war;
+            //let Ffric = fricforce + 0.5 * 1.2 * 0.0014 * dx * (1+dwx*dwx) * Cd;
+            let Ffric = fricforce + 0.5 * 1.2 * 0.0014 * v*v * Cd;    // TODO: Check the drag
+            return -m*g / (m + nwheels * Iwheel / rwheel**2) * dwx / (1+dwx*dwx)
+             - Ffric / (m + nwheels * Iwheel / rwheel**2) / Math.sqrt(1+dwx*dwx)
+             - dx*dx * dwx*d2wx / (1+dwx*dwx);
+          }
+
+          // Function wrapper for compatibility with RK4 solver
+          // y[0] is x
+          // y[1] is dx
+          const func = function(t, y) {
+            return [ y[1], d2x(y[0], y[1]) ];
+          }
+
+          // TODO: Add custom stopping criteria to RK4 solver
+
+          const t0 = 0;
+          const tf = 7;
+
+          // Initial condition will be slightly altered by com
+          // If com == 0:
+          // Assume track has zero curvature at starting gate
+          const dw0 = dw(0);
+          const y0 = [ -com / Math.sqrt(1+dw0*dw0), 0 ];   // Move car back
+
+          // Track might be sloped the entire way, for fun or something
+          const dwf = dw(xf);
+          const finishLine = xf - com / Math.sqrt(1+dwf*dwf);   // Move finish line closer
+
+          // RK4 will try to stop when this function is 0, and will include a final solution point very close to it
+          const preStoppingCondition = (t,y) => (y[0] - xf)
+
+          let soln = RK4.solve(t0, tf, y0, func, 200, preStoppingCondition);
+          console.log(soln);
+          
+          // Calculate the time the car crossed the finish line (we now use psc to tFinish is calculated in RK4)
+          let tFinish = soln[soln.length-1].t;
+          
+          // Output kinetic (linear and rotational), potential, and total energy
+
+          for(var i=0; i<soln.length; i++) {
+            let t = soln[i].t;
+            let x = soln[i].y[0];
+            let xdot = soln[i].y[1];
+            let y = w(x);
+            let ydot = xdot * dw(x);  // Chain rule
+
+            let pot = y * m * g;
+            let klin = 0.5 * m * (xdot**2 + ydot**2);
+            let krot = 0.5 * nwheels * Iwheel / rwheel**2 * (xdot**2 + ydot**2);
+            let total = pot + klin + krot;
+            //console.log({t, total, pot, klin, krot});
+            //console.log(total);
+          }
+
+          if(tFinish) {
+            //console.log('Race time: ' + tFinish + 's');
+            //console.log('Simulation time: ' + (Date.now() - timestamp) + ' ms')
+            //console.log('Elevation at finish line: ' + w(finishLine));
+            document.getElementById('result').innerHTML = 'Time: ' + tFinish.toFixed(4) + ' s';
+          }
+          else {
+            document.getElementById('result').innerHTML = 'Did not finish';
+          }
+
+          // Plot energies vs. x
+
+          datapot.length = 0;
+          dataklin.length = 0;
+          datakrot.length = 0;
+          datatotal.length = 0;
+
+          for(var i=0; i<soln.length; i++) {
+            let t = soln[i].t;
+            let x = soln[i].y[0];
+            let xdot = soln[i].y[1];
+            let y = w(x);
+            let ydot = xdot * dw(x);  // Chain rule
+
+            let pot = y * m * g;
+            let klin = 0.5 * m * (xdot**2 + ydot**2);
+            let krot = 0.5 * nwheels * Iwheel / rwheel**2 * (xdot**2 + ydot**2);
+            let total = pot + klin + krot;
+
+            datapot.push({x: x/0.3048, y: pot})
+            dataklin.push({x: x/0.3048, y: klin})
+            datakrot.push({x: x/0.3048, y: krot})
+            datatotal.push({x: x/0.3048, y: total})
+
+            if(soln[i].y[0] > finishLine) {
+              
+              break;
+            }
+          }
+
+          if(!chart) {
+            var chart = new Chart(document.getElementById('energy-plot'), {
+              type: 'line',
+              data: {
+                datasets: [{
+                  label: "Potential",
+                  data: datapot,
+                  fill: false,
+                  borderColor: "blue",
+                  pointRadius: 0
+                }, {
+                  label: "Kinetic (Linear)",
+                  data: dataklin,
+                  fill: false,
+                  borderColor: "red",
+                  pointRadius: 0
+                }, {
+                  label: "Kinetic (Rotational)",
+                  data: datakrot,
+                  fill: false,
+                  borderColor: "green",
+                  pointRadius: 0
+                }, {
+                  label: "Total",
+                  data: datatotal,
+                  fill: false,
+                  borderColor: "black",
+                  pointRadius: 0
+                }]
+              },
+              options: {
+                animation: {
+                  duration: 0
+                },
+                scales: {
+                  xAxes: [{
+                    type: 'linear',
+                    position: 'bottom',
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Distance (ft)'
+                    }
+                  }],
+                  yAxes: [{
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Energy (J)'
+                    }
+                  }]
+                },
+                tooltips: {
+                  mode: 'index',
+                  intersect: false
+                },
+                hover: {
+                  mode: 'index',
+                  intersect: false
+                }
+              }    
+
+            });
+
+          }
+
+        }
+      </script>
+    </div>
+        <!--#include virtual="/footer.shtml"-->
+</body>
+</html>

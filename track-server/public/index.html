@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+
+  
+<html ng-app="pinewoodApp"> 
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Race Manager - Utah Valley Pinewood Derby</title>
+	<!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+	<link rel="icon" type="image/png" href="/favicon.ico">
+  <link href="https://fonts.googleapis.com/css?family=Droid+Sans+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Exo+2:600,600i" rel="stylesheet">
+    
+  <script src="/libs/angular.min.js"></script>
+  <script src="/libs/angular-ui-router.min.js"></script>
+  <script src="/libs/angular-animate.min.js"></script>
+  <script src="/libs/angular-sanitize.min.js"></script>
+
+    <script src="/libs/ui-bootstrap-tpls.min.js"></script>
+    <script src="/libs/moment.min.js"></script>
+    <script type="text/javascript" src="/libs/datetimepicker.js"></script>
+    <script src="/libs/dateTimeInput.js"></script>
+    <script type="text/javascript" src="/libs/datetimepicker.templates.js"></script>
+    <script type="text/javascript" src="/libs/qrcode.min.js"></script>
+    
+    
+    <!--<link href='https://fonts.googleapis.com/css?family=Roboto:400,700,300italic,400italic' rel='stylesheet' type='text/css'>-->
+    <link rel="stylesheet" href="/libs/bootstrap.min.css">
+    <link rel="stylesheet" href="/libs/datetimepicker.css"/>
+    
+    <link rel="stylesheet" href="/main.css">
+    <link rel="stylesheet" href="/credits.css">
+	
+   
+  <script src="/app.js"></script>
+  <script src="/appStates.js"></script>
+  <script src="/EventNewCtrl.js"></script>
+  <script src="/EventDeleteCtrl.js"></script>
+  <script src="/EventDeleteResultsCtrl.js"></script>
+  <script src="/EventCtrl.js"></script>
+  <script src="/EventListCtrl.js"></script>
+  <script src="/AddCarsCtrl.js"></script>
+  <script src="/CarCtrl.js"></script>
+  <script src="/CarDeleteCtrl.js"></script>
+  <script src="/ResultDeleteCtrl.js"></script>
+  <script src="/CalibrateCtrl.js"></script>
+  <script src="/AddFromMobileCheckinCtrl.js"></script>
+  <script src="/scale.js"></script>
+  <script src="/autofocus.js"></script>
+  <script src="/videoStream.js"></script>
+  <script src="/instantReplay.js"></script>
+  <script src="/xHideOverflow.js"></script>
+  <script src="/zeroFilter.js"></script>
+  <script src="/QrcodeDirective.js"></script>
+  <script src="/dbReplicator.js"></script>
+  <script src="/onLoad.js"></script>
+  
+  <script src="/libs/Chart.min.js"></script>
+  <script src="/libs/angular-chart.min.js"></script>
+  
+  <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/socket.js"></script>
+  
+  
+  <base href="/">
+</head>
+
+<body>
+  	<div class=header>
+		<a href="/events-list">
+			<img src="img/logo-color-flat.png">
+		</a>
+		<div class=subtitle><span>Race Manager</span></div>
+	</div>
+
+    <div ui-view style="margin:10px;">
+    </div>
+ 
+  
+  
+  <!--
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-route/angular-route.js"></script>
+  -->
+  <!--
+  <script src="app.js"></script>
+  <script src="view1/view1.js"></script>
+ -->
+</body>
+</html>
+

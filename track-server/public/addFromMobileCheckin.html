@@ -1,0 +1,42 @@
+<div class="modal-header">
+  <h3 class="modal-title">{{options.heading}}</h3>
+</div>
+
+
+<div class="modal-body" style="max-height:50%; overflow-y: auto;" ng-keydown="handleKeydown($event)">
+  
+  <fieldset class="form-group">
+    <div class="btn-group">
+      <label class="btn btn-info" name="showAllEvents" ng-model='filters.showAllEvents' uib-btn-radio="0" ng-click="loadCheckInCars()" >Only this event</label>
+      <label class="btn btn-info" name="showAllEvents" ng-model='filters.showAllEvents' uib-btn-radio="1" ng-click="loadCheckInCars()" >All events</label>
+    </div>  
+  </fieldset>  
+
+  <fieldset class="form-group">
+    <div class="btn-group">
+      <label class="btn btn-info" name="showAddedCars" ng-model='filters.showAddedCars' uib-btn-radio="0" ng-click="loadCheckInCars()" >Only unadded cars</label>
+      <label class="btn btn-info" name="showAddedCars" ng-model='filters.showAddedCars' uib-btn-radio="1" ng-click="loadCheckInCars()" >All cars</label>
+    </div>  
+  </fieldset>  
+
+  {{ info.mess }}
+  {{ info.err }}
+  <form name="newCar" novalidate>
+    <div style="float:left; width: 289px; text-align:center; margin-bottom:20px;"
+      ng-repeat="car in cars track by $index" class="chooseMobileCheckinCar">
+      <div ng-click="chooseCar(car.checkInId)">
+        <img ng-src="https://utahvalleypinewoodderby.com/api/v3/checkin/{{car.checkInId}}.jpg"
+          style="width:276px;height:207px;" />
+        <br>
+        <p style='font-size: 14pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>{{car.carName}} |
+          {{car.nickname}} | {{car.den}}</p>
+        <p style='font-size: 12pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>
+          {{car.time | date:'M/d h:mm a'}}</p>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <input type=button class="btn" ng-click="close()" value="Cancel">
+</div>

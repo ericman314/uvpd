@@ -1,0 +1,74 @@
+<p><a ng-href="/events-list">Back to all events</a></p>
+<div class="pinStateIndicator">
+  <span class='lane-color-1'>{{pinStates[1]}}</span>
+  <span class='lane-color-2'>{{pinStates[2]}}</span>
+  <span class='lane-color-3'>{{pinStates[3]}}</span>
+  <span class='lane-color-4'>{{pinStates[4]}}</span>
+</div>
+<h1>{{event.eventName}}</h1>
+<p>{{event.eventDate | date:"MMM dd, yyyy"}}</p>
+
+<div class="btn-group" uib-dropdown>
+  <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+    Action <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" uib-dropdown-menu>
+    <li><a href="#" ng-click="editEvent()">Edit event</a></li>
+    <li ng-show="!debugMode"><a href="#" ng-click="debugMode = true">Enable debug mode</a></li>
+    <li ng-show="debugMode"><a href="#" ng-click="debugMode = false">Disable debug mode</a></li>
+    <li class="divider"></li>
+    <li><a ng-href="/api/results.csv?eventId={{event.eventId}}" target='_blank'>Download results</a></li>
+    <li class="divider"></li>
+    <li><a href="#" ng-click="deleteEvent()">Delete event</a></li>
+    <li><a href="#" ng-click="eventDeleteResults()">Delete all results</a></li>
+  </ul>
+</div>
+
+<button class="btn btn-primary" ng-click="gotoRace()">START RACE</button> 
+
+<button class="btn btn-primary" ng-click="gotoWelcome()">Welcome screen</button> 
+
+<button class="btn btn-primary" ng-click="gotoCredits()">Credits</button> 
+
+
+<h2>Cars ({{cars.length}})</h2>
+<button class="btn btn-primary" ng-click="addCars()">Add car</button>
+<br><br>
+<p ng-show="duplicateName()" style="color:red; font-weight: bold;">Duplicate name: {{duplicateName()}}</p>
+<div style="clear:both;"></div>
+
+<div style="float:left; width: 320px; text-align:center; margin-bottom:20px;" ng-repeat="car in cars track by $index">
+  <a ui-sref="car-details({carId:car.carId})">
+    <img ng-src="cars/{{car.carId}}.jpg" style="width:95%;"/>
+    <br>
+    <p style='font-size: 22pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>{{car.carName}}</p>
+    <p style='font-size: 14pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'><i>{{car.nickname || '&nbsp;'}}</i></p>
+  </a>
+</div>
+
+<h2 style="clear:both;">Results</h2>
+
+<div class="results-pane">
+  
+  <ul>
+    <li ng-repeat="result in results track by $index" class="x-angular-animate list-item" style="border-top:solid gray 1px;">
+      
+      <div uib-dropdown>
+        <a href class=name uib-dropdown-toggle id="simple-dropdown-{{result.resultId}}">
+          <div class="name result-name">{{result.resultDate | date : "h:mm:ss a"}} {{getCarFromResult(result).carName}}</div>
+          <div class="result-time lane-color-{{result.lane}}" style="top:-6px;">{{ formatTime(result.time) }}</div>
+          <div style="clear:both;"></div>
+        </a>
+        <ul class="dropdown-menu" uib-dropdown-menu id="simple-dropdown-{{result.resultId}}">
+          <li><a href ng-click="deleteResult(result)">Delete result</a></li>
+        </ul>
+      </div>
+    
+        
+    </li>
+  </ul>
+  
+</div>
+
+
+<div ui-view></div>

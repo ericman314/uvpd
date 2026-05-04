@@ -1,0 +1,27 @@
+Using mongoose...
+
+Collection: events
+
+EventModel
+{
+  _id:   ObjectId
+  name:  String,
+  date:  Date,
+  cars: [CarModel]
+}
+
+
+CarModel
+{
+  _id:    ObjectId
+  name:   String,
+  weight: Number,
+  results: [ResultModel]
+}
+
+ResultModel
+{
+  _id:    ObjectId
+  lane:   Number,
+  time:   Number
+}

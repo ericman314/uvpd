@@ -1,0 +1,176 @@
+<div class=fullpage x-hide-overflow="">
+
+<div style="margin-right: 40px;height:100%">
+
+<div class="col-md-9">
+ 
+  <div ng-class="{'col-xs-12':true, 'now-racing':true, animateRacing:animateRacing}">
+    <h1>NOW RACING</h1>
+    <div class=col-xs-3 ng-repeat="lane in allLanes">
+      <!--<h2>LANE {{lane}}</h2>-->
+      <div ng-show="getRacing(lane) || lanes.indexOf(lane) >= 0">
+        <div uib-dropdown>
+          <a href class=name uib-dropdown-toggle id="simple-dropdown{{lane}}"><h2>{{getRacingName(lane)}}</h2></a>
+          <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="simple-dropdown{{lane}}">
+            <li><a href ng-click="deferTemporarily(lane)">Defer for one race</a></li>
+            <li><a href ng-click="deferPermanently(lane)">Defer permanently</a></li>
+          </ul>
+        </div>
+        <div><img style=""  ng-class="{nowRacingImg:readyToRace}" ng-src="cars/{{getRacingId(lane)}}.jpg"/></div>
+        
+        <div class="time-countdown" ng-show="status === 'READY' && raceTimes[lane] === 0">{{ 0 | number: 4}}</div>
+        <div ng-class="{'time-countdown':true, 'time-countdown-fade':status==='ENDED'}" ng-show="(status === 'RACING' || status === 'ENDED') && raceTimes[lane] === 0">{{ (currentTime - gateReleaseTime)/1000 | number : 4}}</div>
+        <div class="time-final" ng-show="(status === 'RACING' || status === 'ENDED') && raceTimes[lane] !== 0">{{raceTimes[lane] | number : 4}}</div>
+        <!--<div class="time-final" ng-show="status === 'ENDED'">{{raceTimes[lane] | number : 4 | zeroFilter}}</div>-->
+        <div ng-class="{'result-place':true, 'result-place-show':getPlace(lane)!=''}">{{getPlace(lane)}}</div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div id="instant-replay" instant-replay>
+    <div class="col-sm-3" ng-repeat="lane in allLanes">
+      <div class="instant-replay-results" ng-show="getRacing(lane) || lanes.indexOf(lane) >= 0">
+        <div ng-class="'lane-color-' + lane">
+          {{getPlace(lane)}} {{getRacingName(lane)}} {{raceTimes[lane] | number : 4}}
+        </div>
+      </div>
+    </div>
+    <video></video>
+  </div>
+
+  <div ng-class="{'col-xs-12':true, 'on-deck':true, animateOnDeckMoveUp:animateOnDeckMoveUp, animateOnDeckAppear:animateOnDeckAppear}">
+    <h1>ON DECK</h1>
+    <div class="col-xs-3" ng-repeat="lane in allLanes">
+      <!--<h2>LANE {{lane}}</h2>-->
+      <div ng-show="getOnDeck(lane) || lanes.indexOf(lane) >= 0">
+        <div class="name"><h2>{{getOnDeckName(lane)}}</h2></div>
+        <div><img style="" ng-src="cars/{{getOnDeckId(lane)}}.jpg"/></div>
+        
+      </div>
+    </div>
+  </div>
+  
+
+  <!--
+  <div class="qr-code-container" ng-show="!event.options.hideLiveResults">
+    <h2 class="wide">VIEW LIVE RESULTS</h2>
+    <div qrcode class="qr-code"></div>
+    <h2 class="narrow">VIEW LIVE RESULTS</h2>
+    <h2>{{shortUrl}}</h2>
+  </div>
+  -->
+  
+  <div class="row">
+    
+   
+    <div class="col-xs-7 race-footer">    
+      View live results at
+      <br><a href="#">UtahValleyPinewoodDerby.com</a>
+      <br>
+      <br>
+      {{wall_time}}
+    </div> 
+    <div class="col-xs-5 race-footer">
+      <img src="img/logo-color-dark-flat.png">
+     
+    </div>
+  </div>
+  
+</div>
+
+<div class="col-md-3 results-pane">
+  
+  
+  
+  <ul>
+    <li ng-repeat="result in resultList" class="x-angular-animate list-item">
+      <div class="result-date">
+          {{result.date | date : "h:mm:ss a"}}
+      </div>
+      <div class="lane-result-container">
+
+       
+        <div class="lane-result" ng-repeat="lane in result.lanes track by $index">
+          <div uib-dropdown>
+            <a href class=name uib-dropdown-toggle id="simple-dropdown-{{lane.result._id}}">
+              <div class="name result-name">{{lane.car.name}}</div>
+              <div class=result-time>{{lane.result.time | number : 4}}</div>
+              <div style="clear:both;"></div>
+            </a>
+            <ul class="dropdown-menu" uib-dropdown-menu id="simple-dropdown-{{lane.result._id}}">
+              <li><a href ng-click="deleteResult(lane.result)">Delete result</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        
+      </div>
+    </li>
+  </ul>
+  
+  <!--
+  <ul>
+    <li ng-repeat="result in resultList" class="x-angular-animate list-item">
+      <div>
+        <div class="col-xs-12">
+          {{result.date | date : "h:mm:ss a"}}
+        </div>
+        <div class="col-xs-3 lane-result" ng-repeat="lane in result.lanes track by $index">
+          <div class=result-name>{{lane.car.name}}</div>
+          <div><img ng-src="cars/{{lane.car._id}}.jpg"></div>
+          <div class=result-time>{{lane.result.time | number : 4}}</div>
+        </div>
+      </div>
+    </li>
+  </ul>
+  -->
+  
+</div>
+
+<div ng-show="debugMode" style="position: fixed; top:0; left:0; background: gray; border: solid black 1px;">
+  <h2>Simulate</h2>
+  
+  <button class="btn btn-primary" ng-click="simulateStartGate()">Release starting gate</button>
+    <h3>Status: {{status}}</h3>
+</div>
+
+<div ng-show="!serialConnected" style="position: fixed; top:0; left:0; background: red; border: solid black 1px; padding: 2px;">
+  {{serialError}}
+</div>
+
+</div>
+
+<!--
+<h1>Now Racing</h1>
+<table>
+<tr>
+<td ng-repeat="i in lanes" style="text-align: center;">
+   <h1>Lane {{i}}</h1>
+   <div ng-show="getRacing(i)">
+     <img ng-src="cars/{{getRacing(i)._id}}.jpg" style="width:400px;"/>
+     <h1>{{ getRacing(i).name }}</h1>
+     <h1 ng-show="racing && raceTimes[i] === 0">{{ (currentTime - gateReleaseTime)/1000 | number : 3 }}</h1>
+     <h1 ng-show="raceTimes[i] > 0">{{raceTimes[i]}}</h1>
+   </div>
+</td>
+</tr>
+</table>
+
+<h2>On Deck</h2>
+<table style="width:60%; margin: 0 auto;">
+<tr>
+<td ng-repeat="i in lanes" style="text-align:center;">
+  <h2>Lane {{i}}</h2>
+  <div ng-show="getOnDeck(i)">
+    
+    <img ng-src="cars/{{getOnDeck(i)._id}}.jpg" style="width:200px;"/>
+    <h2>{{ getOnDeck(i).name }}</h2>
+  </div>
+</td>
+</tr>
+</table>
+-->
+
+
+</div>

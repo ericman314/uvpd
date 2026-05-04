@@ -1,0 +1,209 @@
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <meta name="description"
+    content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+
+  <title>Utah Valley Pinewood Derby - Make a Reservation</title>
+  <!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="main.css?v=2">
+  <link rel="icon" type="image/png" href="favicon.ico">
+
+  <style>
+    .ui-datepicker {
+      margin: 0 auto;
+    }
+
+    table#upcoming {
+      margin: 0 auto;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    table#upcoming td {
+      border-top: solid gray 1px;
+      border-bottom: solid gray 1px;
+      padding: 2px 8px;
+    }
+
+    table#upcoming td:first-child {
+      border-left: solid gray 1px;
+    }
+
+    table#upcoming td:last-child {
+      border-right: solid gray 1px;
+    }
+  </style>
+
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+
+
+<body class=home>
+  <!--#include virtual="/nav.shtml"-->
+
+
+  <div class=pageContent>
+
+    <h1 class=center>Make a Reservation</h1>
+
+    <div class="standout-light">
+      <p class="center">We are no longer accepting
+      reservations. <a href="reservations-suspended">Read more</a></p>
+    </div>
+<!--
+    <p class="center big" style="line-height: 200%;">
+
+
+      <span style="font-size: 20pt; font-weight: 600; display: inline-block; margin:0 20px;">
+        $120
+      </span>
+      <br />
+
+
+    <p class="center">
+      <b>What's included:</b>
+    </p>
+    <ul style="display:block;margin-left:calc(50% - 140px);">
+      <li>Travel within Utah County</li>
+      <li>Setup at your facility</li>
+      <li>Emceeing the race</li>
+      <li>Live results</li>
+      <li>Lego building station (<a href="/lego">Learn more</a>)</li>
+    </ul>
+
+
+
+    <h2 class=center>Available Dates</h2>
+
+    <div class=center id=loading-calendar>Loading calendar...</div>
+    <div class=center id="datepicker"></div>
+
+    <p class='small center'>The calendar may not show recently scheduled events. We will contact you to confirm the
+      date.</p>
+
+    <p class="center big" style="line-height: 200%;">
+      <a id='formLink'
+        href="https://docs.google.com/forms/d/e/1FAIpQLSeltFzaGPqtZyB8LaaBQ-hS-HcjGLTheiwkrX9eXTXhkMVKbA/viewform"
+        target="_blank" class=button>Continue</a>
+    </p>
+  
+
+    <br />
+    <hr />
+    <h3 class=center id="upcoming">Upcoming Events</h3>
+    <table id='upcoming'>
+
+    </table>
+-->
+    <!-- 
+https://docs.google.com/forms/d/e/1FAIpQLSeltFzaGPqtZyB8LaaBQ-hS-HcjGLTheiwkrX9eXTXhkMVKbA/viewform?usp=pp_url&entry.1063901444=2018-02-07
+   -->
+  </div>
+
+  <!--#include virtual="/footer.shtml"-->
+</body>
+
+<script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+<script>
+  var dateData = [];
+
+  function renderDatepicker() {
+    $('#loading-calendar').remove();
+
+    var dp = $("#datepicker").datepicker({
+      dateFormat: 'yy-mm-dd',
+      changeMonth: true,
+      changeYear: true,
+      beforeShowDay: function (date) {
+        var m = moment(date);
+        var mdate = m.format("YYYY-MM-DD");
+
+        var available = true;
+
+
+        if (m.isBefore(moment().add(6, "days"))) {
+          available = false;
+        }
+        else if (m.day() === 0) {
+          available = false;
+        }
+        else if (dateData.indexOf(mdate) >= 0) {
+          available = false;
+        }
+
+        // Block out everything prior to this date
+        if (m.isBefore(moment('2019-05-01'))) {
+          available = false;
+        }
+
+        return [
+          available,
+          available ? "" : "unavailable",
+          available ? "Available" : "Not available"
+        ]
+      }
+    });
+
+    $("#datepicker").on('change', function (evt) {
+      var date = $('#datepicker').datepicker("getDate");
+      var m = moment(date);
+      var mdate = m.format("YYYY-MM-DD");
+
+      if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(mdate)) {
+        $('.modalInnerWrapper iframe').remove();
+
+        var src = "https://docs.google.com/forms/d/e/1FAIpQLSeltFzaGPqtZyB8LaaBQ-hS-HcjGLTheiwkrX9eXTXhkMVKbA/viewform?entry.1063901444=" + mdate;
+        // $('.modalInnerWrapper').append('<iframe class=modal frameborder=0 src=' + src + '>Loading...</iframe>');
+        $('#formLink').attr('href', src)
+      }
+
+    });
+
+    // $('#datepicker').datepicker('setDate', '2019-05-01');
+  }
+
+  $(function () {
+    var cal_id = 'hl5e0uijgvmqo84sd4nht2imc0@group.calendar.google.com';
+    var api_key = 'AIzaSyDFIEq_I3GZ8myruxbND4zKnK5mfs8wwVs';
+    var query = {
+      key: api_key,
+      singleEvents: true,
+      orderBy: "startTime",
+      timeMin: (new Date()).toISOString()
+    }
+    var url = "https://www.googleapis.com/calendar/v3/calendars/" + cal_id + "/events?" + $.param(query);
+
+    $.ajax({
+      url: url,
+      success: function (data) {
+        dateData = data.items.map(i => i.start.date || i.start.dateTime.substring(0, 10));
+        renderDatepicker();
+      }
+    });
+
+    setTimeout(function () {
+      $('#loading-calendar').html('Loading calendar...<br><br>This is taking a while. You can still click "Continue" below to make a reservation.');
+    }, 3000);
+
+    // Load upcoming events
+    $.ajax({
+      url: 'https://script.google.com/macros/s/AKfycbzWY3EZ3yRfLzIDSyzsAZjJZb4dpshRj2y6xyG4_olVqf8sUDkE/exec',
+      success: function (data) {
+        var $tab = $('table#upcoming');
+        for (var i = 0; i < data.length; i++) {
+          $tab.append($('<tr><td>' + moment(data[i].date).format("MMM D") + '</td><td>' + data[i].city + '</td></tr>'));
+        }
+      }
+    });
+
+  });
+
+
+</script>
+
+</html>

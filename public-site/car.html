@@ -1,0 +1,190 @@
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <meta name="description"
+    content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Utah Valley Pinewood Derby - Live Results</title>
+  <!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+  <link rel="stylesheet" href="main.css?v=2">
+  <link rel="icon" type="image/png" href="favicon.ico">
+
+  <style>
+    .eventSelectButton {
+      margin-top: 12px;
+      cursor: pointer;
+      background: #f1e7d0;
+      width: 300px;
+      margin: 12px auto;
+      padding: 8px;
+      border: solid #333333 1px;
+    }
+
+    .eventSelectButton:hover {
+      background: #dbd0b4;
+    }
+
+    .eventName {
+      font-weight: bold;
+    }
+
+    button {
+      margin: 0 4px;
+      font-weight: 400;
+    }
+  </style>
+
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+
+<body id="top">
+  <!--#include virtual="/nav.shtml"-->
+
+
+  <div class="pageContent-fullWidth center">
+
+    <div id="carDetails"></div>
+
+  </div>
+
+  <script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script>
+  <script>
+
+
+    var carId
+    var car
+
+    /* Show a specific car */
+    function showCar(_carId) {
+      carId = _carId
+      view = 'cars/' + carId
+
+      $.get("/api/v3/carDetails?id=" + encodeURIComponent(carId), function (data) {
+        car = data;
+        console.log('Loaded')
+        updateView()
+      });
+
+      updateView()
+    }
+
+    function updateView() {
+      console.log('updateView()')
+      console.log(car)
+      // TODO: window push state
+
+      $con.empty()
+
+      var heading = ''
+      var lastHeading = heading
+
+
+      $con.append('<br/><a href="javascript:void(0);" id="backToEvent">◄ Back</div>')
+
+
+      if (car) {
+        $con.append('<h2>' + escape(car.carName) + '</h2>')
+        $con.append('<h3>' + escape(car.nickname) + '</h3>')
+        $con.append('<img src="/api/v3/cars/' + car.carId + '.jpg">')
+
+        console.log(car)
+
+        if (car.achievements.length > 0) {
+          $con.append('<h3>Achievements</h3>')
+          for (var a of car.achievements) {
+            $con.append('<div> ★ ' + escape(a) + '</div>')
+          }
+        }
+
+        $con.append('<h3>Results</h3>')
+        $conResults = $('<div style="max-width:200px; margin: 0 auto;">')
+          $con.append($conResults)
+        if (car.results.length > 0) {
+
+          for (var i = 0; i < car.results.length; i++) {
+            $leftDiv = $('<div style="text-align:left; margin: 16px 0;"/>')
+            $conResults.append($leftDiv)
+            if (car.results[i].replayFilename) {
+              $leftDiv.append('<b>Race ' + (i + 1) + '</b>&mdash;<a href="/api/v3/video/' + car.results[i].replayFilename + '">View Replay</a><br/>')
+            } else {
+              $leftDiv.append('<b>Race ' + (i + 1) + '</b><br/>')
+            }
+            if (car.results[i].place != null) {
+              $leftDiv.append('Place: ' + place(car.results[i].place) + '<br/>')
+            }
+            $leftDiv.append(lane(car.results[i].lane) + ' Lane<br/>')
+            let time = car.results[i].time === 10 ? 'Did not finish' : ('Time: ' + car.results[i].time.toFixed(4) + ' seconds')
+            $leftDiv.append(time + '<br/>')
+          }
+        } else {
+          $conResults.append('<div>' + escape(car.carName) + ' has not raced yet.</div>')
+        }
+
+      } else {
+        $con.append('<p>Loading results</p>')
+      }
+    }
+
+    function getCarResults(carId) {
+      return results.filter(function (car) { return car.carId === carId })
+    }
+
+
+    $(function () {
+      $con = $('#carDetails')
+
+      $(document).on('click', '#backToEvent', function (e) {
+        window.history.back();
+      })
+
+      var params = new URLSearchParams(window.location.search)
+      if (params.has('id')) {
+        showCar(params.get('id'))
+      }
+
+    })
+
+    window.onpopstate = function (e) {
+      console.log('popstate')
+      if (e.state.id != null) {
+        // View specific car
+        showCar(e.state.id)
+      }
+      console.log(e.state)
+    }
+
+    function escape(unsafe) {
+      if (!unsafe) return ""
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function place(n) {
+      switch (n % 10) {
+        case 1: return n + 'st'
+        case 2: return n + 'nd'
+        case 3: return n + 'rd'
+        default: return n + 'th'
+      }
+    }
+
+    function lane(n) {
+      switch(n) {
+        case 1: return 'Blue'
+        case 2: return 'Yellow'
+        case 3: return 'Green'
+        case 4: return 'Red'
+      }
+    }
+
+  </script>
+  <!--#include virtual="/footer.shtml"-->
+</body>
+
+</html>

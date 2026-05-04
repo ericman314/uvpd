@@ -1,0 +1,127 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+  <meta name="description" content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+
+	<title>Utah Valley Pinewood Derby - Equations of Motion</title>
+	<!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+	<link rel="stylesheet" href="main.css?v=2">
+	<link rel="icon" type="image/png" href="favicon.ico">
+  
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+  </script>
+
+  <style>
+
+    table {
+      border-collapse: collapse;
+    }
+
+    td {
+      border: solid black 1px;
+      padding: 2px 4px;
+      text-align: center;
+    }
+  </style>
+
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+
+<body class=home>
+<!--#include virtual="/nav.shtml"-->
+  
+	
+		<div class=pageContent>
+
+      <p><a class="caption" href="about-simulation">Back to About the simulator</a></p>
+      
+      <h1>Discussion</h1>
+
+      <h2>Explanation of the results</h2>
+      <p>This is a sample result from the Pinewood Derby Simulator:</p>
+      <br>
+      Time: 2.6974 s
+      <p class=center>
+        <img src="img/simulation-discussion.png"/>
+      </p>
+      <p>
+        The time listed above is how long it takes the car to get to the finish line. The graph shows the kinetic and potential energies of the car at each point on the track. The x-axis, distance, is the horizontal distance from the starting gate in feet. The y-axis is energy in joules. Blue is potential energy, red is kinetic energy, and green is rotation energy (of the wheels). The black line is the sum of all three energies.
+      </p>
+      <p>
+        At the very beginning of the race, all of the car's energy is in the form of potential energy, and none in kinetic energy, because the car is not moving. As the car moves down the slope, the potential energy is converted to kinetic energy. By the time the car has leveled out, all of the energy is in the form of kinetic energy, and the potential energy is zero. The total energy drops over time due to friction. In a friction-less world&mdash;and you can do that with this simulator&mdash;the total energy is constant throughout.
+      </p>
+      <p>
+        Using the simulator, you can add a grade or slope to the floor. If you do this, the potential energy might not be zero at the bottom of the track. It might even be negative. This is perfectly fine, as potential energy is relative anyway, and you can designate any elevation you want as "zero" potential energy, and all of the physics will work out the same. It's just more convenient and instructive here to set the floor as zero. (Interestingly, in orbital mechanics, it is most convenient to set a point infinitely far away from a planet as "zero" potential energy, which means all other locations have negative potential energy. If the sum of a spacecraft's kinetic and potential energy becomes positive, we say it has "escape velocity" and will escape completely out of orbit.)
+      </p>
+      <p>
+        Some of the energy is stored as rotational energy. This can be considered "wasted" energy when it comes to having a fast car, since it means there is less kinetic energy in the form of forward motion. Using the simulator, you can set the mass of the wheels to zero, and see what happens to the rotational energy and the result time.
+      </p>
+      <h2>What makes a fast car?</h2>
+      <p>
+        Starting with the default simulator settings, I tweaked a few parameters and plotted the improvement in result time:
+      </p>
+      <p class=center>
+        <img src="img/whatmakesafastcar.png">
+      </p>
+      <p>
+        By far, the factor with the greatest effect was friction. Frustratingly, it is also the most difficult to control, let alone model in a simulator. Having straight axles and using graphite are probably the best ways to lower friction.
+      </p>
+      <p>
+        Using wheels that were half the weight of stock wheels was the next best improvement. Using three wheels, or having one wheel raised slightly, works, as long as that wheel never touches the track. If it does touch the track, it will very quickly pick up rotation energy, steeling the forward kinetic energy from the track, defeating the point of only having three wheels.
+      </p>
+      <p>
+        The floor grade can have a big impact on result time. In some derbies, all the cars seem to be just a little faster than usual. The times from one event can't always be compared with those from another night if the track is set up in a different place.
+      </p>
+      <p>
+        Perhaps surprisingly, the drag coefficient has very little effect. At the slow speeds of a pinewood derby car, there just isn't much air resistance at all. But a sleek design would still  impress the judges.
+      </p>
+      <p>
+        I also looked at what the effect would be of not adding enough weight. When the car is less than 5 ounces, a greater <i>proportion</i> of the car's energy is stored as rotational energy in the wheels. If you experiment by setting the wheel mass equal to 0, the result time does not change very much as you change the car's mass. If you also set drag to 0, the result time does not change at all.
+      </p>
+      <p>
+        Moving the center of mass (COM) towards the back of the car is an easy way to pick up some time. Your car starts with more potential energy, and thus it has more kinetic energy on the straight section, and moves faster.
+      </p>
+      <p>
+        There is some debate on whether the COM position should always be in the back, or sometimes in the front, or if it depends on the shape of the track. I simulated two extremes of track shape, one with a 20 ft level-off distance (gradual) and one with a 12 ft level-off distance (steep), and two different cars: one with the COM at the front, and one with the COM at the back.
+      </p>
+      
+      <table>
+        <tr>
+          <td colspan=3>Result time (s)</td>
+        </tr>
+        <tr>
+          <td>COM</td>
+          <td>Gradual slope</td>
+          <td>Steep slope</td>
+        </tr>
+        <tr>
+          <td>Front</td>
+          <td>2.8377</td>
+          <td>2.5739</td>
+        </tr>
+        <tr>
+          <td>Back</td>
+          <td>2.8347</td>
+          <td>2.5559</td>
+        </tr>
+        <tr>
+          <td>Difference</td>
+          <td>-0.0030</td>
+          <td>-0.0180</td>
+        </tr>
+      </table>
+
+      <p>
+        The difference is greater for the steep slope, because the car's center of mass is raised by more than it would be on a gradual slope. But in both cases the car with the COM in the back is faster.
+      </p>
+    </div>
+      <!--#include virtual="/footer.shtml"-->
+  </body>
+</html>

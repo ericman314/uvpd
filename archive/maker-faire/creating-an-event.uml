@@ -1,0 +1,114 @@
+title Pinewood Derby
+
+participant Arduino
+participant Node.js
+participant Angular.js
+participant Remote Server
+participant Mobile Client
+
+note right of Mobile Client:
+Creating an event
+end note
+
+note right of Node.js:
+Emcee runs:
+$ node start
+end note
+
+
+Node.js->*Angular.js: xdg-open localhost:8085
+
+Node.js->*Arduino: Open serial port
+
+note right of Angular.js
+Emcee creates a new event
+end note
+
+Angular.js->Node.js: POST /api/eventNewSave
+Node.js->Angular.js: Event created
+Angular.js->Remote Server: Replicate database
+Mobile Client->Remote Server: GET /api/v3/events
+Remote Server->Mobile Client: List of events
+
+note right of Mobile Client:
+Checking in a car
+end note
+
+Mobile Client->Remote Server: POST /api/v3/checkin
+Remote Server->Mobile Client: You are checked in
+
+Angular.js->Remote Server: GET /api/v3/checkinlist
+Remote Server->Angular.js: List of checked in cars
+note right of Angular.js:
+Emcee reviews submission
+end note
+Angular.js->Node.js: POST /api/newCarSave
+Node.js->Angular.js: Car saved
+Angular.js->Remote Server: Replicate database
+Remote Server-->Mobile Client: socket: New data available
+Mobile Client->Remote Server: GET /api/v3/carsAndResultsByEventId?id
+Remote Server->Mobile Client: List of cars and results
+
+note right of Mobile Client:
+Running a race
+end note
+
+note right of Angular.js:
+Emcee starts race; the
+order of the first eight
+cars is determined
+end note
+
+note right of Arduino:
+Press large red button
+end note
+
+Arduino->Node.js: Start
+Node.js-->Angular.js: socket: startingGateReleased
+note right of Angular.js:
+Show live video of race,
+begin race timer animation
+end note
+
+note right of Angular.js:
+Results displayed on screen
+as they are received
+end note
+
+Arduino->Node.js: Trigger,2,2735634
+Node.js-->Angular.js: socket: trigger { 2, 2.735634 }
+Angular.js->Node.js: POST /api/result { carId, lane, date, place, time }
+Arduino->Node.js: Trigger,3,2965429
+Node.js-->Angular.js: socket: trigger { 3, 2.965429 }
+Angular.js->Node.js: POST /api/result { carId, lane, date, place, time }
+Arduino->Node.js: Trigger,1,3017234
+Node.js-->Angular.js: socket: trigger { 1, 3.017234 }
+Angular.js->Node.js: POST /api/result { carId, lane, date, place, time }
+Arduino->Node.js: Trigger,0,3182639
+Node.js-->Angular.js: socket: trigger { 0, 3.182639 }
+Angular.js->Node.js: POST /api/result { carId, lane, date, place, time }
+
+note right of Angular.js:
+After last result, video is looped
+at 0.5x speed and achievements
+are calculated
+end note
+
+Angular.js->Node.js: POST /api/achievements
+Node.js->Angular.js: Saved
+Angular.js->Remote Server: Replicate database
+Remote Server-->Mobile Client: socket: New data available
+Mobile Client->Remote Server: GET /api/v3/carsAndResultsByEventId?id
+Remote Server->Mobile Client: List of cars and results
+
+note right of Arduino:
+Emcee pushes gate back up
+end note
+Arduino->Node.js: Ready
+
+Node.js-->Angular.js: socket: readyForStart
+
+note right of Angular.js:
+Next four cars are assigned
+and displayed on screen
+end note

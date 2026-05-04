@@ -1,0 +1,782 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <!--<script src="jquery-1.12.4.min.js"></script>-->
+    
+    <script src="vextab-div.js"></script>
+    <script>
+     jQuery = $;    // Vextab includes jquery, but under the $ namespace only
+                    // Including jquery twice causes bootstrap to hiccup or something
+    </script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="vextab.css">
+  </head>
+  <body>
+    <div class="center">
+    &nbsp;  <!-- jquery slideUp jumps otherwise -->
+      <div id="welcomeScreen" class="screen">
+        <h1>
+          Flashcard thingy
+        </h1>
+        <br>
+        
+        
+        <div class="center">
+          <form id=nameForm class="form">
+            <div class="row">
+              <div class="col-md-4"></div>
+              <div class="col-md-4">
+                <div class="input-group input-group-lg">
+                  <input type="text" id=name class="form-control" placeholder="Enter your full name">
+                  <span class="input-group-btn">
+                    <button id=nameButton type=submit class="btn btn-primary" type="button">OK</button>
+                  </span> 
+                </div><!-- /input-group -->
+              </div><!-- /.col-lg-6 -->
+            </div>
+<!--           
+           <div class="input-group input-group-lg">
+              <input type="text" id=name class="form-control form-control-lg" placeholder="Enter your name" style="max-width: 90%; margin:8px auto;">
+              <button id=nameButton type=submit class="btn btn-primary">OK</button>
+            </div>
+            -->
+          </form>
+        </div>
+      </div>
+      <div id="instrumentScreen" class="screen">
+      
+      <button type="button" class="btn btn-default btn" onclick="activateScreen('welcomeScreen')">
+        <span class="glyphicon glyphicon-menu-left" aria-hidden="true" ></span> Back
+      </button>
+      
+      
+        <h3><span class="spanName"></span></h3>
+        <h1>Select Instrument</h1>
+        <form id=instrumentForm>
+          <div class="form-group">
+            <input class="btn btn-primary btn-lg" type=submit name=instrument value="Violin">
+          </div>
+          <div class="form-group">
+            <input class="btn btn-primary btn-lg" type=submit name=instrument value="Viola">
+          </div>
+          <div class="form-group">
+            <input class="btn btn-primary btn-lg" type=submit name=instrument value="Cello">
+          </div>
+          <div class="form-group">
+            <input class="btn btn-primary btn-lg" type=submit name=instrument value="Bass">
+          </div>
+        </form>
+      </div>
+      <div id="levelScreen" class="screen">
+        <button type="button" class="btn btn-default btn" onclick="activateScreen('instrumentScreen')">
+          <span class="glyphicon glyphicon-menu-left" aria-hidden="true" ></span> Back
+        </button>
+        <h3 class="big"><span class="spanName"></span>, <span class="spanInstrument"></span></h3>
+        <h1>Select Level</h1>
+        <form id=levelForm>
+          <div class="form-group"><input class="btn btn-primary btn-lg" type=submit name=level value="1"></div>
+          <div class="form-group"><input class="btn btn-primary btn-lg" type=submit name=level value="2"></div>
+          <div class="form-group"><input class="btn btn-primary btn-lg" type=submit name=level value="3"></div>
+          <div class="form-group"><input class="btn btn-primary btn-lg" type=submit name=level value="4"></div>
+          <div class="form-group"><input class="btn btn-primary btn-lg" type=submit name=level value="5"></div>
+          <div class="form-group"><input class="btn btn-primary btn-lg" type=submit name=level value="6"></div>
+          <div class="form-group"><input class="btn btn-primary btn-lg" type=submit name=level value="7"></div>
+          <div class="form-group"><input class="btn btn-primary btn-lg" type=submit name=level value="8"></div>
+        </form>          
+      </div>
+      <div id="readyScreen" class="screen">
+        <button type="button" class="btn btn-default btn" onclick="activateScreen('levelScreen')">
+          <span class="glyphicon glyphicon-menu-left" aria-hidden="true" ></span> Back
+        </button>
+        <h1 class="big"><span class="spanName"></span>, <span class="spanInstrument"></span>, Level <span class="spanLevel"></span></h1>
+        <form id=readyForm>
+          <div class="form-group"><input class="btn btn-primary btn-lg" type=submit class="big" value="Start"></input></div>
+        </form>
+      </div>
+      <div id="playScreen" class="screen">
+      
+        <div class="modal fade" tabindex="-1" role="dialog" id="confirmStartOver">
+          <div class="modal-dialog ">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title">Start Over</h3>
+              </div>
+              <div class="modal-body">
+                <h4>Are you sure?</h4>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-primary" onclick="startOver()">Yes</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+              
+        <!--<p><span class="spanName"></span>, <span class="spanInstrument"></span>, Level <span class="spanLevel"></span></p>-->
+        Completed: <span class="spanQNum"></span>/<span class="spanQDen"></span>
+        <button type="button" class="btn btn-default btn-sm" onclick="showConfirmStartOver()">
+          <span class="glyphicon glyphicon-repeat" aria-hidden="true" ></span> Start Over
+        </button>
+        <br>
+        <canvas width="150" height="100">
+        </canvas>
+        <h2><span class="spanPrompt"></span></h2>
+        <div id="playScreenNotes" class="screen">
+          <table style="margin: 0 auto;">
+            <tr>
+              <td><input type=button class="note" data-val="Ab" value="Ab"   ></td>
+              <td><input type=button class="note" data-val="A"  value="A"   ></td>
+              <td><input type=button class="note" data-val="A#" value="A#"   ></td>
+            </tr>                             
+            <tr>                              
+              <td><input type=button class="note" data-val="Bb" value="Bb"   ></td>
+              <td><input type=button class="note" data-val="B"  value="B"   ></td>
+              <td><input type=button class="note" data-val="B#" value="B#"   ></td>
+            </tr>                             
+            <tr>                              
+              <td><input type=button class="note" data-val="Cb" value="Cb"   ></td>
+              <td><input type=button class="note" data-val="C"  value="C"   ></td>
+              <td><input type=button class="note" data-val="C#" value="C#"   ></td>
+            </tr>                             
+            <tr>                              
+              <td><input type=button class="note" data-val="Db" value="Db"   ></td>
+              <td><input type=button class="note" data-val="D"  value="D"   ></td>
+              <td><input type=button class="note" data-val="D#" value="D#"   ></td>
+            </tr>                             
+            <tr>                              
+              <td><input type=button class="note" data-val="Eb" value="Eb"   ></td>
+              <td><input type=button class="note" data-val="E"  value="E"   ></td>
+              <td><input type=button class="note" data-val="E#" value="E#"   ></td>
+            </tr>                             
+            <tr>                              
+              <td><input type=button class="note" data-val="Fb" value="Fb"   ></td>
+              <td><input type=button class="note" data-val="F"  value="F"   ></td>
+              <td><input type=button class="note" data-val="F#" value="F#"   ></td>
+            </tr>                             
+            <tr>                              
+              <td><input type=button class="note" data-val="Gb" value="Gb"   ></td>
+              <td><input type=button class="note" data-val="G"  value="G"   ></td>
+              <td><input type=button class="note" data-val="G#" value="G#"   ></td>
+            </tr>
+          </table>
+        </div>
+        <div id="playScreenFingers" class="screen">
+          <table style="margin: 0 auto;">
+
+            <tr>
+              <td><input type=button class="finger" data-row=0 data-col=0></td>
+              <td><input type=button class="finger" data-row=0 data-col=1></td>
+              <td><input type=button class="finger" data-row=0 data-col=2></td>
+              <td><input type=button class="finger" data-row=0 data-col=3></td>
+            </tr>
+            <tr>
+              <td><input type=button class="finger" data-row=1 data-col=0></td>
+              <td><input type=button class="finger" data-row=1 data-col=1></td>
+              <td><input type=button class="finger" data-row=1 data-col=2></td>
+              <td><input type=button class="finger" data-row=1 data-col=3></td>
+            </tr>
+            <tr>
+              <td><input type=button class="finger" data-row=2 data-col=0></td>
+              <td><input type=button class="finger" data-row=2 data-col=1></td>
+              <td><input type=button class="finger" data-row=2 data-col=2></td>
+              <td><input type=button class="finger" data-row=2 data-col=3></td>
+            </tr>
+            <tr>
+              <td><input type=button class="finger" data-row=3 data-col=0></td>
+              <td><input type=button class="finger" data-row=3 data-col=1></td>
+              <td><input type=button class="finger" data-row=3 data-col=2></td>
+              <td><input type=button class="finger" data-row=3 data-col=3></td>
+            </tr>
+            <tr>
+              <td><input type=button class="finger" data-row=4 data-col=0></td>
+              <td><input type=button class="finger" data-row=4 data-col=1></td>
+              <td><input type=button class="finger" data-row=4 data-col=2></td>
+              <td><input type=button class="finger" data-row=4 data-col=3></td>
+            </tr>
+            <tr>
+              <td><input type=button class="finger" data-row=5 data-col=0></td>
+              <td><input type=button class="finger" data-row=5 data-col=1></td>
+              <td><input type=button class="finger" data-row=5 data-col=2></td>
+              <td><input type=button class="finger" data-row=5 data-col=3></td>
+            </tr>
+            <tr>
+              <td><input type=button class="finger" data-row=6 data-col=0></td>
+              <td><input type=button class="finger" data-row=6 data-col=1></td>
+              <td><input type=button class="finger" data-row=6 data-col=2></td>
+              <td><input type=button class="finger" data-row=6 data-col=3></td>
+            </tr>
+            <tr>
+              <td><input type=button class="finger" data-row=7 data-col=0></td>
+              <td><input type=button class="finger" data-row=7 data-col=1></td>
+              <td><input type=button class="finger" data-row=7 data-col=2></td>
+              <td><input type=button class="finger" data-row=7 data-col=3></td>
+            </tr>
+          </table>
+          
+        </div>
+      </div>
+      <div id=finishScreen class=screen>
+        <p class="big"><span class="spanName"></span>, <span class="spanInstrument"></span>, Level <span class="spanLevel"></span></p>
+        <h2>Congratulations!</h2>
+        <h2>Time: <span class="spanTime"></span></h2>
+        <button type="button" class="btn btn-default btn" onclick="activateScreen('instrumentScreen')">
+          <span class="glyphicon glyphicon-repeat" aria-hidden="true" ></span> Play Again
+        </button>
+      </div>
+    </div>
+    <br><br><br><br>
+
+    <script>
+    
+      var activateScreen;
+      var startOver;
+      var showConfirmStartOver;
+    
+     $(function() {
+    
+      var model = {};
+      
+      function send(sheet, data) {
+        $.post("https://script.google.com/macros/s/AKfycbz9KEueRNAjcZG-yMVrUuTE5NitkQCLSi3XYPUd-BHgwzA2Lvk/exec", {sheetName: sheet, data: JSON.stringify(data)}, function(response) {
+          console.log(response);
+        });
+      }
+      
+      activateScreen = function(name) { 
+        $('.screen:not(#' + name + ')').slideUp(200);
+        $('.screen#' + name).slideDown(200);
+      };
+      
+      showConfirmStartOver = function() {
+        $('#confirmStartOver').modal();
+      };
+      
+      startOver = function() {
+        $('#confirmStartOver').modal('hide');
+        activateScreen('readyScreen');
+      };
+      
+      $('#name').on("change input keydown", function(e) {
+        var valid = $('#name').val().trim().length > 0;
+        $('#nameButton').prop("disabled", !valid);
+      });
+      
+      $('#nameForm').on("submit", function(e) {
+        var valid = $('#name').val().trim().length > 0;
+        if(valid) {
+          model.name = $('#name').val().trim();
+          $('.spanName').text(model.name);
+          activateScreen('instrumentScreen');
+        }
+        e.preventDefault();
+      });
+      
+      $("#instrumentForm").submit(function(e) { 
+        var val = $("input[type=submit][clicked=true]", $(this)).val();
+        model.instrument = val;
+        $('.spanInstrument').text(model.instrument);
+        activateScreen('levelScreen');
+        e.preventDefault();
+      });
+      
+      $("#instrumentForm input[type=submit]").click(function(e) {
+          $("input[type=submit]", $(this).parents("form")).removeAttr("clicked");
+          $(this).attr("clicked", "true");
+      });
+      
+      $("#levelForm").submit(function(e) { 
+        var val = $("input[type=submit][clicked=true]", $(this)).val();
+        model.level = val;
+        $('.spanLevel').text(model.level);
+        activateScreen('readyScreen');
+        console.log(model);
+        e.preventDefault();
+      });
+      
+      $("#levelForm input[type=submit]").click(function(e) {
+          $("input[type=submit]", $(this).parents("form")).removeAttr("clicked");
+          $(this).attr("clicked", "true");
+      });
+      
+      $("#readyForm").submit(function(e) {
+        activateScreen('playScreen');
+        
+        startQuiz(model);
+        
+        e.preventDefault();
+      });
+      
+      
+       
+      var instruments = {
+        Violin: {
+          strings: ['G3', 'D4', 'A4', 'E5'],
+          rows: 8,
+          clef: 'Treble',
+          levels: {
+            1: {
+              notes: [['G3', '', '', '', '', '', '', '', ''],
+                      ['D4', '', 'E4', '', 'F#4', 'G4', '', ''],
+                      ['A4', '', '', '', '', '', '', ''],
+                      ['E5', '', '', '', '', '', '', '', '']]
+            },
+            2: {
+              notes: [['G3', '', '', '', '', '', '', '', ''],
+                      ['D4', '', 'E4', '', 'F#4', 'G4', '', ''],
+                      ['A4', '', 'B4', '', 'C#5', 'D5', '', ''],
+                      ['E5', '', '', '', '', '', '', '', '']]
+            },
+            3: {
+              notes: [['G3', '', 'A3', '', 'B3', 'C4', '', '', ''],
+                      ['D4', '', 'E4', '', 'F#4', 'G4', '', ''],
+                      ['A4', '', 'B4', '', 'C#5', 'D5', '', ''],
+                      ['E5', '', '', '', '', '', '', '', '']]
+            },
+            4: {
+              notes: [['G3', '', 'A3', '', 'B3', 'C4', '', '', ''],
+                      ['D4', '', 'E4', 'F4', 'F#4', 'G4', '', ''],
+                      ['A4', '', 'B4', 'C4', 'C#5', 'D5', '', ''],
+                      ['E5', '', '', '', '', '', '', '', '']]
+            },
+            5: {
+              notes: [['G3', '', 'A3', '', 'B3', 'C4', '', '', ''],
+                      ['D4', '', 'E4', 'F4', 'F#4', 'G4', '', ''],
+                      ['A4', '', 'B4', 'C4', 'C#5', 'D5', '', ''],
+                      ['E5', '', 'F#5', 'G5', '', 'A5', '', 'B5', '']]
+            },
+            6: {
+              notes: [['G3', '', 'A3', '', 'B3', 'C4', 'C#4', '', ''],
+                      ['D4', '', 'E4', 'F4', 'F#4', 'G4', 'G#4', ''],
+                      ['A4', '', 'B4', 'C4', 'C#5', 'D5', '', ''],
+                      ['E5', '', 'F#5', 'G5', 'G#5', 'A5', '', 'B5', '']]
+            },
+            7: {
+              notes: [['G3', '', 'A3', '', 'B3', 'C4', 'C#4', '', ''],
+                      ['D4', '', 'E4', 'F4', 'F#4', 'G4', 'G#4', ''],
+                      ['A4', 'Bb4', 'B4', 'C4', 'C#5', 'D5', '', ''],
+                      ['E5', 'F5', 'F#5', 'G5', 'G#5', 'A5', '', 'B5', '']]
+            },
+            8: {
+              notes: [['G3', '', 'A3', 'Bb3', 'B3', 'C4', 'C#4', '', ''],
+                      ['D4', 'Eb4', 'E4', 'F4', 'F#4', 'G4', 'G#4', ''],
+                      ['A4', 'Bb4', 'B4', 'C4', 'C#5', 'D5', 'Eb5', ''],
+                      ['E5', 'F5', 'F#5', 'G5', 'G#5', 'A5', 'Bb5', 'B5', '']]
+            },
+          }
+        },
+        Viola: {
+          strings: ['C3', 'G3', 'D4', 'A4'],
+          rows: 8,
+          clef: 'Alto',
+          levels: {
+            1: {
+              notes: [['C3', '', '', '', '', '', '', '', ''],
+                      ['G3', '', '', '', '', '', '', '', ''],
+                      ['D4', '', 'E4', '', 'F#4', 'G4', '', ''],
+                      ['A4', '', '', '', '', '', '', '', '']]
+            },
+            2: {
+              notes: [['C3', '', '', '', '', '', '', '', ''],
+                      ['G3', '', '', '', '', '', '', '', ''],
+                      ['D4', '', 'E4', '', 'F#4', 'G4', '', ''],
+                      ['A4', '', 'B4', '', 'C#5', 'D5', '', '', '']]
+            },
+            3: {
+              notes: [['C3', '', '', '', '', '', '', '', ''],
+                      ['G3', '', 'A3', '', 'B3', 'C4', '', '', ''],
+                      ['D4', '', 'E4', '', 'F#4', 'G4', '', ''],
+                      ['A4', '', 'B4', '', 'C#5', 'D5', '', '', '']]
+            },
+            4: {
+              notes: [['C3', '', '', '', '', '', '', '', ''],
+                      ['G3', '', 'A3', '', 'B3', 'C4', '', '', ''],
+                      ['D4', '', 'E4', 'F4', 'F#4', 'G4', '', ''],
+                      ['A4', '', 'B4', 'C4', 'C#5', 'D5', '', '', '']]
+            },
+            5: {
+              notes: [['C3', '', 'D3', '', 'E3', 'F3', '', '', ''],
+                      ['G3', '', 'A3', '', 'B3', 'C4', '', '', ''],
+                      ['D4', '', 'E4', 'F4', 'F#4', 'G4', '', ''],
+                      ['A4', '', 'B4', 'C4', 'C#5', 'D5', '', '', '']]
+            },
+            6: {
+              notes: [['C3', '', 'D3', '', 'E3', 'F3', 'F#3', '', ''],
+                      ['G3', '', 'A3', '', 'B3', 'C4', 'C#4', '', ''],
+                      ['D4', '', 'E4', 'F4', 'F#4', 'G4', 'G#4', ''],
+                      ['A4', '', 'B4', 'C4', 'C#5', 'D5', '', '', '']]
+            },
+            7: {
+              notes: [['C3', '', 'D3', '', 'E3', 'F3', 'F#3', '', ''],
+                      ['G3', '', 'A3', 'Bb3', 'B3', 'C4', 'C#4', '', ''],
+                      ['D4', '', 'E4', 'F4', 'F#4', 'G4', 'G#4', ''],
+                      ['A4', '', 'B4', 'C4', 'C#5', 'D5', '', '', '']]
+            },
+            8: {
+              notes: [['C3', '', 'D3', '', 'E3', 'F3', 'F#3', '', ''],
+                      ['G3', '', 'A3', 'Bb3', 'B3', 'C4', 'C#4', '', ''],
+                      ['D4', 'Eb4', 'E4', 'F4', 'F#4', 'G4', 'G#4', ''],
+                      ['A4', 'Bb4', 'B4', 'C4', 'C#5', 'D5', 'Eb5', '', '']]
+            }
+          }
+        },
+        Cello: {
+          strings: ['C2', 'G2', 'D3', 'A3'],
+          rows: 7,
+          clef: 'Bass',
+          levels: {
+            1: {
+              notes: [['C2', '', '', '', '', '', '', '', ''],
+                      ['G2', '', '', '', '', '', '', '', ''],
+                      ['D3', '', 'E3', '', 'F#3', 'G3', '', ''],
+                      ['A3', '', '', '', '', '', '', '', '']]
+            },
+            2: {
+              notes: [['C2', '', '', '', '', '', '', '', ''],
+                      ['G2', '', '', '', '', '', '', '', ''],
+                      ['D3', '', 'E3', '', 'F#3', 'G3', '', ''],
+                      ['A3', '', 'B3', '', 'C#4', 'D4', '', '', '']]
+            },
+            3: {
+              notes: [['C2', '', '', '', '', '', '', '', ''],
+                      ['G2', '', 'A2', '', 'B2', 'C3', '', '', ''],
+                      ['D3', '', 'E3', '', 'F#3', 'G3', '', ''],
+                      ['A3', '', 'B3', '', 'C#4', 'D4', '', '', '']]
+            },
+            4: {
+              notes: [['C2', '', '', '', '', '', '', '', ''],
+                      ['G2', '', 'A2', '', 'B2', 'C3', '', '', ''],
+                      ['D3', '', 'E3', 'F3', 'F#3', 'G3', '', ''],
+                      ['A3', '', 'B3', 'C4', 'C#4', 'D4', '', '', '']]
+            },
+            5: {
+              notes: [['C2', '', 'D2', '', 'E2', 'F2', '', '', ''],
+                      ['G2', '', 'A2', '', 'B2', 'C3', '', '', ''],
+                      ['D3', '', 'E3', 'F3', 'F#3', 'G3', '', ''],
+                      ['A3', '', 'B3', 'C4', 'C#4', 'D4', '', '', '']]
+            },
+            6: {
+              notes: [['C2', '', 'D2', '', 'E2', 'F2', '', '', ''],
+                      ['G2', 'G#2', 'A2', '', 'B2', 'C3', 'C#3', '', ''],
+                      ['D3', '', 'E3', 'F3', 'F#3', 'G3', 'G#3', ''],
+                      ['A3', '', 'B3', 'C4', 'C#4', 'D4', '', '', '']]
+            },
+            7: {
+              notes: [['C2', '', 'D2', '', 'E2', 'F2', '', '', ''],
+                      ['G2', 'G#2', 'A2', 'Bb2', 'B2', 'C3', 'C#3', '', ''],
+                      ['D3', '', 'E3', 'F3', 'F#3', 'G3', 'G#3', ''],
+                      ['A3', '', 'B3', 'C4', 'C#4', 'D4', '', '', '']]
+            },
+            8: {
+              notes: [['C2', '', 'D2', '', 'E2', 'F2', '', '', ''],
+                      ['G2', 'G#2', 'A2', 'Bb2', 'B2', 'C3', 'C#3', '', ''],
+                      ['D3', 'Eb3', 'E3', 'F3', 'F#3', 'G3', 'G#3', ''],
+                      ['A3', 'Bb3', 'B3', 'C4', 'C#4', 'D4', '', '', '']]
+            }
+          }
+        },
+        Bass: {
+          strings: ['E2', 'A2', 'D3', 'G3'],
+          rows: 5,
+          clef: 'Bass',
+          levels: {
+            4: { 
+              notes: [['E2', 'F2', 'F#2', 'G2', 'Ab2'],
+                      ['A2', 'Bb2', 'B2', 'C3', 'C#3'],
+                      ['D3', 'Eb3', 'E3', 'F3', 'F#3'],
+                      ['G3', 'Ab3', 'A3', 'Bb3', 'B3']]
+            }
+          }
+        }
+      };
+      
+      var keySignatures = [
+        ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'],
+        ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'],
+        ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'], 
+        ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'],
+        ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+        ['G', 'A', 'B', 'C', 'D', 'E', 'F#'],
+        ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'],
+        ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'],
+        ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'] 
+      ];
+      
+      var clefs = {
+        Treble: { line1: 'E4' },
+        Alto: { line1: 'F3' },
+        Bass: { line1: 'G2' }
+      };
+      
+      var questions = [];
+      var answered = [];
+      var totalStartTime;
+      
+      function startQuiz() {
+        questions = [];
+        answered = [];
+        var allNotes = [];
+        
+        // Flatten allNotes
+        for(var i=0; i<instruments[model.instrument].levels[model.level].notes.length; i++) {
+          allNotes = allNotes.concat(instruments[model.instrument].levels[model.level].notes[i]);
+        }
+        
+        // Remove dupes        
+        allNotes = allNotes.filter(function(item, pos, self) {
+          return item && self.indexOf(item) == pos;
+        })
+       
+        for(var i=0; i<allNotes.length; i++) {
+          var noteParts = allNotes[i].split('/');
+          for(var j=0; j<noteParts.length; j++) {   // Or choose a random note?
+            var note = noteParts[j];
+           
+            // Choose a random key signature for each question using reservoir sampling.
+            var noteNoNumber = note.replace(/([A-G][b|#]?)([0-9])/, "$1");
+            var keyIdx = -1;
+            var nItems = 0;
+            for(var k=0; k<keySignatures.length; k++) {
+              if(keySignatures[k].indexOf(noteNoNumber) >= 0) {
+                nItems++;
+                if(Math.random() < 1.0/nItems) {
+                  keyIdx = k;
+                }
+              }
+            }
+            var key = keySignatures[keyIdx][0];
+            
+            questions.push({
+              note: note,
+              type: 'fingering',
+              attempts: 1,
+              elapsed: 0,
+              key: key,
+              incorrectResponses: []
+            });
+            
+            // Choose a random key signature for each question using reservoir sampling.
+            var noteNoNumber = note.replace(/([A-G][b|#]?)([0-9])/, "$1");
+            var keyIdx = -1;
+            var nItems = 0;
+            for(var k=0; k<keySignatures.length; k++) {
+              if(keySignatures[k].indexOf(noteNoNumber) >= 0) {
+                nItems++;
+                if(Math.random() < 1.0/nItems) {
+                  keyIdx = k;
+                }
+              }
+            }
+            var key = keySignatures[keyIdx][0];
+            
+            questions.push({
+              note: note,
+              type: 'note',
+              attempts: 1,
+              elapsed: 0,
+              key: key,
+              incorrectResponses: []
+            });
+            
+          }
+        }
+        
+     
+        
+        // Assign values to fingering buttons
+        for(var r=0; r<8; r++) {
+          for(var c=0; c<4; c++) {
+            var note = instruments[model.instrument].levels[model.level].notes[c][r];
+            if(note) {
+              $('input.finger[data-row=' + r + '][data-col=' + c + ']').each(function() {
+                $(this).attr('data-val', note);
+                
+                $(this).val(note.replace(/([A-G][b|#]?)([0-9])/, "$1"));
+                
+                $(this).show();
+              });
+            }
+          }
+        }
+        
+        shuffle(questions);
+        totalStartTime = Date.now();
+        nextQuestion();
+      }
+        
+      function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+          // Pick a remaining element...
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex -= 1;
+
+          // And swap it with the current element.
+          temporaryValue = array[currentIndex];
+          array[currentIndex] = array[randomIndex];
+          array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+      }
+        
+      var currentNote = '';
+      var startTime = 0;
+      
+      var currentType = '';
+        
+      function nextQuestion() {
+        if(questions.length === 0) {
+          quizComplete();
+          return;
+        }
+        
+        // What note is it?
+        var note = questions[0].note;
+        currentNote = note;
+        
+        // What question type is it?
+        currentType = questions[0].type;   
+        
+        
+        var key = questions[0].key;
+        
+        if(currentType === 'note') {
+          // Remove the number from this note.
+          currentNote = currentNote.replace(/([A-G][b|#]?)([0-9])/, "$1");
+        }
+        
+        
+        var clef = instruments[model.instrument].clef;
+        console.log(note);
+        var noteNoAccidental = note.replace(/([A-G])[b|#]?([0-9])/, "$1/$2");
+        
+        var text = 'tabstave notation=true tablature=false key=' + key + ' clef=' + clef.toLowerCase() + '\n notes ' + noteNoAccidental;
+        
+        //var VexTab = vextab.VexTab;
+        //var Artist = vextab.Artist;
+        var Renderer = Vex.Flow.Renderer;
+        
+        var renderer = new Renderer($('canvas')[0], Renderer.Backends.CANVAS);
+        var artist = new Artist(5, -20, 150, {scale: 1.5});
+        var v = new VexTab(artist);
+        
+        console.log(currentNote);
+        
+        v.parse(text);
+        artist.render(renderer);
+        
+        if(currentType === 'note') {
+          $('#playScreenNotes').show();
+          $('#playScreenFingers').hide();
+        }
+        else if (currentType === 'fingering') {
+          $('#playScreenNotes').hide();
+          $('#playScreenFingers').show();
+        }
+        
+        $('.spanQNum').text(answered.length);
+        $('.spanQDen').text(questions.length + answered.length);
+        
+        if(currentType === "note")
+          $('.spanPrompt').text("What note is this?");
+        else if (currentType === "fingering")
+          $('.spanPrompt').text("What fingering is this?");
+        
+        $('input.note, input.finger').prop('disabled', false);
+        startTime = Date.now();
+      }
+      
+      $('input.note, input.finger').click(function(e) {
+        $('input.note, input.finger').prop('disabled', true);
+        if($(this).attr('data-val') === currentNote) {
+          console.log("Correct");
+          var ans = questions.splice(0, 1)[0];
+          ans.elapsed += (Date.now() - startTime) / 1000;
+          // This question is all done
+          answered.push(ans);
+          var self = this;
+          
+          $(self).addClass('correct');
+          setTimeout(function() {
+            $(self).removeClass('correct');
+            nextQuestion();
+          }, 1500);
+          
+          $('.spanPrompt').text("Correct!");
+        }
+        else {
+          console.log("Incorrect");
+          var ans = questions.splice(0, 1)[0];
+          ans.elapsed += (Date.now() - startTime) / 1000;
+          ans.attempts++;
+          ans.incorrectResponses.push($(this).attr('data-val'));
+          // Requeue this question
+          questions.push(ans);
+          var self = this;
+          $(self).addClass('incorrect');
+          setTimeout(function() {
+            $(self).removeClass('incorrect');
+            nextQuestion();
+          }, 4000);
+          
+          // What was the correct answer?
+          var correctInput = $("input[data-val='" + currentNote + "']");
+          
+          setTimeout(function() {
+            $(correctInput).addClass('correct');  
+          }, 500);
+          setTimeout(function() {
+            $(correctInput).removeClass('correct');  
+          }, 4000);
+          $('.spanPrompt').text("Incorrect");
+        }
+        
+      });
+      
+      function quizComplete() {
+        model.totalElapsedTime = (Date.now() - totalStartTime) / 1000;
+        model.answered = answered;
+        
+        send("Results", [
+          model.name,
+          model.instrument,
+          model.level,
+          model.totalElapsedTime,
+          JSON.stringify(model.answered)
+        ]);
+        
+        var mins = Math.floor(model.totalElapsedTime / 60);
+        var secs = Math.ceil(model.totalElapsedTime - mins * 60);
+        
+        var minsStr = (mins < 10 ? '0' : '') + mins;
+        var secsStr = (secs < 10 ? '0' : '') + secs;
+        
+        $('.spanTime').text(minsStr + ":" + secsStr);
+        
+        activateScreen('finishScreen');
+      }
+      
+      activateScreen('welcomeScreen');
+      
+      /*
+      model.name = "Eric";
+      model.instrument = "Cello";
+      model.level = '4';
+      activateScreen('playScreen');
+      startQuiz(model);
+      */
+      
+      $('#name').focus();
+    
+      
+     });
+      
+    </script>
+  </body>
+</html>

@@ -1,0 +1,357 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+	<title>Utah Valley Pinewood Derby</title>
+	<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="main.css">
+	<link rel="icon" type="image/png" href="favicon.ico">
+	<style>
+		#not-available,
+		#please-identify,
+		#identity-fail
+		{
+			display: none;
+		}
+		
+		table {
+			width: 100%;
+			font-weight: 400;
+			border-collapse: collapse;
+		}
+		
+		tr.rowheading td {
+			font-weight: 700;
+			border-bottom: solid gray 1px;
+		}
+		
+		.board {
+			background: #d3c7ba;
+			padding: 8px;
+			margin-bottom: 32px;
+		}
+		
+		.boardHeading {
+			text-align:left;
+			padding: 12px 0;
+			background: #d3c7ba;
+			font-weight: 400;
+			color:black;
+			border-bottom: solid gray 1px;
+		}
+		
+		@media (max-width:600px) {
+			.showWide {
+				display:none;
+			}
+		}
+		
+		@media (min-width:601px) {
+			.showNarrow {
+				display:none;
+			}
+		}
+		
+	</style>
+</head>
+<body>
+	<div class=header>
+		<a href="/">
+			<img src="img/logo-color-flat.png">
+		</a>
+		<div class=subtitle><span>Pinewood Derby Track Rental in Utah County</span></div>
+		<div class=nav>
+			<ul>
+				<li><a href="index">Home</a></li>
+				<li><a href="reservations">Reservations</a></li>
+				<li><a href="events">Events</a></li>
+				<li><a href="about">About</a></li>
+			</ul>
+		</div>
+	</div>
+	
+		<div class=pageContent>
+
+			<br>
+			<p class="center big">Live results. Any time. Anywhere.</p>
+			<br>
+			
+			<div id='loading' class="standout center">
+				<p class=big>Loading. Please wait...</p>
+				<p id='not-available' style='font-size:80%;'>This is taking longer than usual. Stats might not be available right now. Sorry!</p>
+			</div>
+			<div id='please-identify' class="standout center">
+				<p class=big>Event code:</p>
+				<input type=text id=eventCode name=eventCode>
+				<p id='identity-fail' class=big>Sorry, couldn't find that event.</p>
+				<p>The event code is displayed on the main leaderboard.</p>
+			</div>
+			<div id='event-details' class="standout center">
+			</div>
+		</div>
+	
+</body>
+
+<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/js-cookie/2.1.0/js.cookie.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	var socket = io();
+	
+	var dataSet = { };
+	
+	// Used to identify the primary key in each table
+	var keys = {
+		events: "EventId",
+		categories: "CategoryId",
+		cars: "CarId",
+		runs: "RunId",
+		results: "ResultId"
+	};
+	
+	/***** Socket messages *****/
+	socket.on('please-identify', function (data) {
+		// Server is asking us to authenticate
+		$('#please-identify').show();
+		$('#introduction').show();
+		$('#eventCode').focus();
+		$('#loading').hide();
+		$('#not-available').html('');
+		
+		console.log(data);
+	});
+	
+	socket.on('identity-ok', function (data) {
+		// The server accepted our authentication
+		if(data.token) {
+			Cookies.set("token", data.token);	// Default lifetime is for the sessions only
+		}
+		
+		$('#please-identify').hide();
+		$('#introduction').hide();
+		$('#loading').hide();
+		if(data.event) {
+			$('#event-details').show();
+			$('#EventName').html(data.event.Name);
+		}
+			
+		console.log(data);
+	});
+	
+	socket.on('identity-fail', function (data) {
+		$('#identity-fail').slideDown(300);
+		console.log(data);
+	});
+	
+	socket.on('data-all', function (_data) {
+		// Replace all the data with the new stuff
+		
+		for(var table in _data) {
+			if(_data.hasOwnProperty(table)) {
+				// Truncate the old table
+				dataSet[table] = {};
+				
+				// Refill with the new _data
+				for(var i=0; i<_data[table].length; i++) {
+					var keyColumn = keys[table];
+					var keyValue = _data[table][i][keyColumn];
+					dataSet[table][keyValue] = _data[table][i];
+				}
+			} 
+		}
+				
+		console.log(dataSet);
+		updateUI();
+	});
+	
+	socket.on('data-upsert', function (_data) {
+		
+		for(var table in _data) {
+			if(_data.hasOwnProperty(table)) {
+				// Replace with the new _data
+				for(var i=0; i<_data[table].length; i++) {
+					var keyColumn = keys[table];
+					var keyValue = _data[table][i][keyColumn];
+					dataSet[table][keyValue] = _data[table][i];
+				}
+			}
+		}
+				
+		console.log(dataSet);
+		updateUI();
+	});
+	
+	socket.on('data-delete', function (_data) {
+		
+		for(var table in _data) {
+			if(_data.hasOwnProperty(table)) {
+				// Delete each of the given _data
+				for(var i=0; i<_data[table].length; i++) {
+					var keyColumn = keys[table];
+					var keyValue = _data[table][i][keyColumn];
+					delete dataSet[table][keyValue];
+				}
+			}
+		}
+				
+	
+		console.log(_data);
+		updateUI();
+	});
+	
+	socket.on('message', function (data) {
+		console.log(data);
+	});
+	
+	/***** Events *****/
+	$('input#eventCode').on("change", function(evt) {
+		$('#identity-fail').hide();
+		socket.emit('code', { EventCode: $('input#eventCode').val() });
+	});
+	
+	/**** Other functions ****/
+	
+	function updateUI() {
+	
+		var EventId = Object.keys(dataSet.events)[0];
+		
+		var EventName = dataSet.events[EventId].Name;
+		
+		var EventDate = moment(dataSet.events[EventId].Date).format("dddd, MMM D, YYYY");
+	
+		var boards = [];
+		
+		for(var CategoryId in dataSet.categories) {
+			if(dataSet.categories.hasOwnProperty(CategoryId)) {
+				var newCat = {};
+				newCat.Name = dataSet.categories[CategoryId].Name;
+				
+				var newCars = [];
+				for(var CarId in dataSet.cars) {
+					if(dataSet.cars.hasOwnProperty(CarId)) {
+						if(dataSet.cars[CarId].CategoryId === CategoryId) {
+							var newCar = {};
+							newCar.Name = dataSet.cars[CarId].Name;
+							
+							// Now search for the times
+							newCar.Times = ['','','',''];
+							newCar.BestTime = 1000000000;
+							for(var ResultId in dataSet.results) {
+								if(dataSet.results.hasOwnProperty(ResultId)) {
+									if(dataSet.results[ResultId].CarId === CarId) {
+										var Lane = dataSet.results[ResultId].Lane;
+										var Time = dataSet.results[ResultId].Time;
+										if(newCar.Times[Lane] !== '')
+											newCar.Times[Lane] += "/";
+										if(Time)  {
+											newCar.Times[Lane] += Time.toFixed(3);
+											newCar.BestTime = Math.min(newCar.BestTime, Time).toFixed(3);
+										}
+									}
+								}
+							}
+							
+							newCars.push(newCar);
+						}
+					}
+				}
+				
+				newCars.sort(function(a, b) {
+					return a.BestTime - b.BestTime;
+				});
+				
+				newCat.cars = newCars;
+				boards.push(newCat);
+			}
+		}
+		
+		// TODO: Sort boards by order, group
+		
+		var ui = $('#event-details');
+		
+		ui.html('');
+
+		ui.append("<div id='another-event' style='float:left;'><a href='events-test' style='color:#ddd; font-size:75%;' onClick='destroyToken();'>Choose another event</a></div>");
+		
+		
+		
+		ui.append('<p class=big style="font-weight: normal;">' + EventName + '</p>');
+		
+		ui.append('<p>' + EventDate + '</p>');
+		
+		
+		for(var i=0; i<boards.length; i++) {
+			var html = '<div class=board>';
+				html += '<div class=boardHeading>' + boards[i].Name + '</div>';
+				html += '<table><tr class=rowheading>' +
+					'<td>Car</td>' +
+					'<td style="font-weight:bold;"><span>Best Time</span></td>' +
+					'<td class=showNarrow><span class=showNarrow> </span></td>' +
+					'<td class=showWide>Lane 1</td>' +
+					'<td class=showWide>Lane 2</td>' +
+					'<td class=showWide>Lane 3</td>' +
+					'<td class=showWide>Lane 4</td>' +
+					'</tr>';
+				
+				for(var j=0; j<boards[i].cars.length; j++) {
+					if(j > 0) {
+						html += "<tr class=showNarrow>";
+						html += "<td colspan=6 style='height:0px; border-bottom:solid gray 1px;'></td>";
+						html += "</tr>";
+					}
+					html += '<tr>';
+					html += '<td>' + boards[i].cars[j].Name + "</td>";
+					if(boards[i].cars[j].BestTime < 1000000000) {
+						html += '<td style="font-weight: bold;">';
+						html += boards[i].cars[j].BestTime;
+						html += "</td>";
+						html += "<td class=showNarrow>";
+						for(var k=0; k<boards[i].cars[j].Times.length; k++) {
+							if(k > 0)
+								html += '<br>';
+							html += "Lane " + (k+1) + ": ";
+							if(boards[i].cars[j].Times[k])
+								html += boards[i].cars[j].Times[k];
+							
+						}
+						html += "</td>";
+					}
+					
+					for(var k=0; k<boards[i].cars[j].Times.length; k++) {
+						html += '<td class=showWide>';
+						if(boards[i].cars[j].Times[k]) {
+							html += boards[i].cars[j].Times[k];
+						}
+						html += '</td>';
+					}
+					html += '</tr>';
+				}
+				html += '</table>';
+			
+					
+			html += '</div>';
+			
+			ui.append(html);
+		}
+	
+	}
+	
+	function destroyToken() {
+		Cookies.set("token", null);
+	}
+	
+	/**** Final setup ****/
+	
+	// Begin conversation with the server (send a token if we have one)
+	socket.emit('greetings', {token: Cookies.get('token')});
+
+</script>
+<script>
+	setTimeout(function() {
+		if($('#loading').is(":visible")) {
+			$('#not-available').slideDown(600);
+		}
+	}, 5000);	
+</script>
+
+</html>

@@ -1,0 +1,16 @@
+  
+	<div class=header>
+		<a href="/">
+			<img src="img/logo-color-flat.png">
+		</a>
+		<div class=subtitle><span>Pinewood Derby Track Rental in Utah County</span></div>
+		<div class=nav>
+			<ul>
+				<li><a href="/">Home</a></li>
+				<!-- <li><a href="choose-date">Make a Reservation</a></li> -->
+				<!-- <li><a href="learn-more">Learn More</a></li> -->
+				<!-- <li><a href="about">About Us</a></li> -->
+			</ul>
+		</div>
+		
+	</div>

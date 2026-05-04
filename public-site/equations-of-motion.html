@@ -1,0 +1,217 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+  <meta name="description" content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+
+	<title>Utah Valley Pinewood Derby - Equations of Motion</title>
+	<!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+	<link rel="stylesheet" href="main.css?v=2">
+	<link rel="icon" type="image/png" href="favicon.ico">
+  
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+  </script>
+	
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+
+<body class=home>
+<!--#include virtual="/nav.shtml"-->
+  
+	
+		<div class=pageContent>
+        <p><a class="caption" href="about-simulation">Back to About the simulator</a></p>
+      
+      <h1>Deriving the Equations of Motion</h1>
+<!--      
+      <p>OK, I actually haven't made the simualation yet as of this writing, but I have some ideas how to do it. This page serves partially as a place for me to record my notes and develop my ideas before I start writing the software.</p>
+-->  
+      
+      <p>To simulate a car racing down the track, we need to derive the equations of motion of a car. Early on I settled on using Lagrangian mechanics to do this. Lagrangian mechanics has several advantages over the more typical Newtonian mechanics taught in high school physics. In Newtonian mechanics, two cartesian coordinates, x and y, would be needed to describe the position of the car on the track. With Lagrangian mechanics, only one generalized coordinate is needed. Additionally, constraints such as "the car has to follow the path of the track" are accounted for automatically in the definition of the generalized coordinate.</p>
+      
+      <p>In our case, we'll call the coordinate $x$ and define it as the horizontal distance the car has traveled along the length of the track. This is not the same as the total distance the car has traveled, since the car also moves vertically as it travels down the incline. If we were to use Newtonian mechanics, we would have to carefully identify all forces involved in keeping the car constrained on the track surface, and that could quickly become unwieldy. In Lagrangian mechanics, that's all taken care of. The only thing we need to supply to determine the equations of motion is the potential energy $V$ as a function of $x$, and the kinetic energy $T$ as a function of $\dot{x}$--read "x dot", which means the time-derivative of $x$, or the car's horizontal speed. We'll take care of factoring in the vertical component of the speed later.</p>
+      
+      <p>Then, a quantity called the <i>Lagrangian</i> is defined as the difference between the kinetic and potential energies:</p>
+      
+      $$L = T - V$$
+      
+      <p>Then, a fancy calculus equation involving $L$ is solved, and out pop the equations of motion. Since the speed of the car depends on some function of $\dot{x}$, the kinetic energy will be some function of $\dot{x}$. The potential energy $V$ is also some function of $x$. Adding in the rotational effects of the wheels won't be too bad either.</p>
+      <!--
+      
+      -->
+
+      <!--
+      <p>We'll need to know the curvature of the track in order to obtain the kinetic and potential energies as a function of $x$ and $\dot{x}$. Earlier I <a href="physics">discussed</a> how I determined the curvature of the track, and arrived at this succint expression for the height of the track $w$ at cartesian coordinate $x$, given only information about the maximum height of the track $h$ and the level-off distance $l$:</p>
+      $$w(x) = -\frac{h}{l^4} (x+l)(x-l)^3$$
+      -->
+
+      <p>Earlier I <a href="physics">discussed</a> how I determined the curvature of the track, and arrived at a neat expression for the height of the track $w$ at cartesian coordinate $x$. However, to keep things as general as possible, and to allow for different models of curvature in the future, I will keep the height of the track $w$ as a function of $x$, but from now on we'll just be calling it $w$. The first and second derivatives of $w$ with respect to $x$ will be $w'$ and $w''$.' </p>
+
+      <p>The potential energy $V_{grav}$ due to gravity is given simply by:</p>
+
+      $$ V_{grav}(x) = -m g w $$
+
+      <p>The kinetic energy is $1/2 m v^2$, where $v$ is the speed of the car. Because the car's velocity has a vertical component, this is not exactly the same as $\dot{x}$, which only represents the horizontal component. But we can use the slope of the track, $w'$, to obtain $v$ from $\dot{x}$:</p>
+
+      $$ v = \dot{x} \sqrt{1 + w'^2} $$
+
+      <p>The kinetic energy of the car is then:</p>
+
+      $$ T_{lin}(x,\dot{x}) = \frac{1}{2} m \dot{x}^2 \left( 1 + w'^2 \right) $$
+      
+      <p>The $lin$ is for <i>linear</i>. The kinetic energy will also include a term for the rotational energy of the wheels. That term will take the same form as the above expression for $T_{lin}$, but with $m$ replaced by $\frac{4I}{r^2}$, where $I$ is the moment of inertia of one wheel and $r$ is its radius. (Do you know where the 4 comes from?) </p>
+
+      $$ T_{rot}(x,\dot{x}) = \frac{1}{2} \frac{4I}{r^2} \dot{x}^2 \left( 1 + w'^2 \right) $$
+
+      <p>We would also like to be able to include a conservative (constant) friction force which, like gravity, will be accounted for in the potential energy $V(x)$. Since this force always acts in the direction opposite that of motion, its contribution to the potential energy can be determined by integrating the product of the magnitude of the force and the distance traveled by the car along the track. We won't have to evaluate this integral directly. And to further simplify things later on, we'll be assuming $F_{fric}$ is constant within a single simulation timestep, and so in some places where we take derivatives, the $F_{fric}$ term will drop out.</p>
+
+      $$ V_{fric}(x,\dot{x}) = \int F_{fric}(x,\dot{x}) \sqrt{ 1 + w'^2 } dx $$
+
+<!--
+      <p>If the assumption of constant friction is only valid over short distances, how are we going to simulate the car racing the entire length of the track? We will do this by breaking one large simulation into many smaller "mini-simulations", each of which covers only a very small length of track. By plugging the results of the first mini-simulation into the initial values of the second, and so on, we can simulate the entire track. Each mini-simulation covers only a short distance, which means our expressions for friction forces above are still valid. </p>
+
+      <p>Friction, especially air resistance, is a function of speed. But we don't know the final speed of the car at the end of a mini-simulation when we start, so how do we know what $F_{fric}(x,\dot{x})$ should be? We want to be as accurate as possible, so we'll calculate the friction using a two-step <i>predictor-corrector</i> method. In the predictor step, the computer will perform one mini-simulation using $F_{fric}(x_{0},\dot{x_{0}})$ calculated using the initial speed of the car in this mini-simulation. Then we perform the mini-simulation, and re-calculate the friction $F_{fric}(x_{f},\dot{x_{f}})$ using the final speed of the car. We average these two frictions to see what the $F_{fric}$ actually should be. Then, in the corrector step, we repeat the mini-simulation using the corrected $F_{fric}$.</p>
+                
+      <p>The fact that we only have conservative forces across a single mini-simulation ensures the mini-simulation will be consistent, and thus it should also be consistent across the entire simulation. Consistent means that the simulation converges to the correct solution as the size of each mini-simulation gets smaller and smaller. This means we can achieve any level of accuracy by dividing the simulation into  enough mini-simulations.</p>
+-->
+
+      <p>Now that we have expressions for $T$ and $V$, and recalling the defintion $L = T - V$, we can extract the equations of motion by solving this differential equation:</p>
+
+      $$ \frac{ \mathrm{d} }{ \mathrm{d}t } \left( \frac{ \partial L }{ \partial \dot{x} }  \right) = \frac{ \partial L }{ \partial x } $$
+
+      <p>
+        The first step is to evaluate the partial derivatives of $L$ with respect to $x$ and $\dot{x}$. The entire expression for $L$ is
+      </p>
+
+      $$
+      \begin{align} \\
+      L & = T - V       \\
+        & = T_{lin}(x,\dot{x}) + T_{rot}(x,\dot{x}) - V_{grav}(x) - V_{fric}(x,\dot{x}) \\
+        & = \frac{1}{2} \left(m + \frac{4I}{r^2}\right) \dot{x}^2 \left( 1 + w'^2 \right) 
+        - \left(-m g w \right) 
+        - \int F_{fric}(x,\dot{x}) \sqrt{ 1 + w'^2 } dx
+      \end{align}       
+      $$
+
+      <p>
+        And so the partial derivatives are:
+      </p>
+
+      $$ \frac{ \partial L }{ \partial \dot{x} } =  \left(m + \frac{4I}{r^2}\right) \dot{x} \left[ 1 + w'^2 \right] $$
+
+      $$
+      \frac{ \partial L }{ \partial x } 
+         = \frac{1}{2} \left(m + \frac{4I}{r^2}\right) \dot{x}^2 \left( 2 w' w'' \right)
+         + m g w' 
+         - F_{fric}(x,\dot{x}) \sqrt{1+w'^2} 
+      $$
+
+      <p>
+        Now we need to take the time derivative of $\frac{\partial L}{\partial \dot{x} }$:
+      </p>
+
+      $$ \frac{ \mathrm{d} }{ \mathrm{d}t } \left( \frac{ \partial L }{ \partial \dot{x} }  \right) =  \left(m + \frac{4I}{r^2}\right)  \left[ \ddot{x} \left(1+w'^2\right) + \dot{x}^2 \left(2 w' w'' \right) \right] $$
+
+      <p>
+        We now have everything we need to determine the equations of motion. Recall the differential equation above:
+      </p>
+
+      $$ \frac{ \mathrm{d} }{ \mathrm{d}t } \left( \frac{ \partial L }{ \partial \dot{x} }  \right) = \frac{ \partial L }{ \partial x } $$
+
+      <p>And now, we substitute the expressions we determined above and solve for $\ddot{x}$:</p>
+
+      $$  \left(m + \frac{4I}{r^2}\right)  \left[ \ddot{x} \left(1+w'^2\right) + \dot{x}^2 \left(2 w' w'' \right) \right] = \frac{1}{2} \left(m + \frac{4I}{r^2}\right) \dot{x}^2 \left( 2 w' w'' \right)  + m g w' - F_{fric}(x,\dot{x}) \sqrt{1+w'^2}  
+      $$
+ <!--
+      $$  \left(m + \frac{4I}{r^2}\right)  \left[ \ddot{x} \left(1+w'^2\right) + \dot{x}^2 \left(w' w'' \right) \right] =  m g w' - F_{fric}(x,\dot{x}) \sqrt{1+w'^2}
+      $$
+ 
+      $$ \ddot{x} \left(1+w'^2\right) + \dot{x}^2 \left(w' w'' \right) =  \frac{m g}{m + 4I/r^2} w' - \frac{F_{fric}(x,\dot{x})}{m + 4I/r^2} \sqrt{1+w'^2} $$
+      
+      $$ \ddot{x} \left(1+w'^2\right) =  \frac{m g}{m + 4I/r^2} w' - \frac{F_{fric}(x,\dot{x})}{m + 4I/r^2} \sqrt{1+w'^2} -  \dot{x}^2 \left(w' w'' \right) $$
+ -->
+      <div style="border:solid 1px black;">
+        $$ \ddot{x} =  \frac{m g}{m + 4I/r^2} \frac{w'}{1+w'^2} - \frac{F_{fric}(x,\dot{x})}{m + 4I/r^2} \frac{1}{\sqrt{1+w'^2}} -  \dot{x}^2 \frac{w' w'' }{1+w'^2} $$
+      </div>
+      <!--
+
+    -->
+      <!--
+      <p>
+        As a sanity check, let's double-check the value of $A(x, \dot{x})$ when the slope of the track is zero. This is the moment the car is at the flat part of the track.
+      </p>
+
+      $$ \ddot{x} =  \frac{m g}{m + 4I/r^2} \frac{0}{1+0^2} - \frac{F_{fric}(x,\dot{x})}{m + 4I/r^2} \frac{1}{\sqrt{1+0^2}} -  \dot{x}^2 \frac{0 w'' }{1+0^2} $$
+      
+
+      <p>
+        Each $w'$ is replaced with a $0$, eliminating most of the terms and leaving us with:
+      </p>
+
+      $$ \ddot{x} = -\frac{F_{fric}(x,\dot{x})}{m + 4I/r^2} $$
+
+      <p>
+        Which is just the friction force divided by the mass plus rotational inertia of the wheels.
+      </p> 
+-->
+      <p>
+        It's interesting that $\dot{x}$ appears in the final term. Apart from friction, the acceleration should primarily depend on the position of the car, not its velocity. Where does that term come from?
+      </p>
+
+      <h2>Free-body approach</h2>
+
+      <p>Let's try the Newtonian mechanics approach and see how it compares. Below we've drawn a diagram of a pinewood derby car.</p>
+      <br/><br/>
+
+      <div class=center>
+        <img src="img/pinewood-free-body.png">
+        <p class=caption>A free body diagram of a pinewood derby car, showing how the forces of gravity, friction, and the track surface combine.</p>
+      </div>
+
+      <p>The car has mass $m$. The four wheels each have moment of inertia $I$, and radius $r$. The car moves along a path defined by $w(x)$. For simplicity we'll ignore the moment of inertia of the car itself, which is probably okay since the rotational speed of the car body is slow and doesn't rotate for a long period of time during a race.
+
+      <p>Most free body diagrams include things like angles and cosines and other trig functions in order to resolve vector components. This is totally unnecessary. In the lower left, we've included a small triangle. The width of the triangle is $1$, the height is the slope of the track $w'$, and the hypotenuse is the arc length of the track, $\sqrt{1+w'^2}$. We'll use the properties of similar triangles to resolve all vector components.</p>
+
+      <p>There are many forces that act on the car. The first we will consider is gravity. It is represented by the black vector pointing straight down, of length $mg$. The component of this vector parallel to the track is what really matters, so by similar triangles, we've drawn a red vector of length $mg \frac{w'}{\sqrt{1+w'^2}}$. Finally, the component of this vector in the x-direction is shown by the green vector, of length:
+        
+      $$mg \frac{w'}{1+w'^2}$$
+
+      <p>Friction acts parallel to the track surface and is shown by the purple vector. We'll use the similar triangle trick again to resolve its x-component, shown by the blue vector: </p>
+      
+      $$\frac{-F_{fric}}{\sqrt{1+w'^2}}$$
+
+      <p>As the car moves along curved portions of the track, the track exerts a force on the car normal to its surface, separate from gravity and friction, which we've already accounted for. The resulting acceleration due to this force is $v^2/R$, where $v$ is the speed of the car and $R$ is the radius of curvature of the track. The radius of curvature of our track is given by:</p>
+
+      $$R = \frac{\left( 1+w'^2 \right)^{3/2}}{w''}$$
+
+      <p>And so the magnitude of the acceleration due to the normal force is:</p>
+
+      $$ N = \frac{v^2}{R} = \left(\dot{x} \sqrt{1+w'^2}\right)^2 \frac{w''}{\left( 1+w'^2 \right)^{3/2}} = \dot{x}^2 \frac{w''}{\sqrt{1+w'^2}} $$
+
+      <p>Then we use our trick with similar triangles to get the component of that acceleration in the x-direction:</p>
+
+      $$ N_x = \dot{x}^2 \frac{w''}{\sqrt{1+w'^2}} \frac{w'}{\sqrt{1+w'^2}} = \dot{x}^2 \frac{w' w''}{1+w'^2}$$</p>
+
+      <p>Finally, we combine the mass of the car and the moments of inertia of the wheels to create an effective, or total, mass, $m_{tot} = m + 4I/r^2$. We divide forces acting on the car by this total mass (the acceleration due to the normal force already takes this into account). When we add everything up, we get this:</p>
+
+      <div style="border:solid 1px black;">
+        $$ \ddot{x} =  \frac{m g}{m + 4I/r^2} \frac{w'}{1+w'^2} - \frac{F_{fric}(x,\dot{x})}{m + 4I/r^2} \frac{1}{\sqrt{1+w'^2}} -  \dot{x}^2 \frac{w' w'' }{1+w'^2} $$
+      </div>
+
+      <p>This is <i>identical</i> to the acceleration we obtained using Lagrangian mechanics. Now we know the origin of the mysterious final term that contains $\dot{x}$: it arises from the normal force, because curved portions of the track exert a force on the car. If this term were not present, the car would accelerate down the starting section of the track, and then unnaturally slow down when the track curved to the horizontal. Maybe if we had used arc-length instead of x-coordinate as the independent variable, this normal force wouldn't matter. But then the algebra would have been much more difficult.</p>
+      
+      <p>The Newtonian method gave us the same result as the Lagrangian, but we had to consider ALL forces acting on the car, AND resolve their components correctly. It is very easy to make mistakes. In fact, there are additional forces I didn't show in the free-body diagram, and I've been sloppy with keeping track of my signs, but the comparison with the result from Lagrangian mechanics is still informative.</p>
+      <p>The biggest advantage of using Lagrangian instead of Newtonian mechanics is that you need only be able to evaluate the energy of the system, then all the forces that act on the system will appear once you do the derivatives. Another advantage is that we can choose whichever independent variable we want, and everything will work out.</p>
+
+      
+
+    </div>
+      <!--#include virtual="/footer.shtml"-->
+  </body>
+</html>

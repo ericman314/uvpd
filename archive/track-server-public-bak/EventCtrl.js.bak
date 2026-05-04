@@ -1,0 +1,951 @@
+// This backup made before changing race order calculation to allow for fractional race multipliers.
+
+angular.module('EventCtrl', ['socket']).controller('EventCtrl', function($scope, $state, $stateParams, $http, $timeout, $interval, $uibModal, $rootScope, socket) {
+  
+  /*
+   * If one of the lanes is not working for some reason, remove the defective lane from this array.
+   */
+  // 2018-04-17 Lane 2 is triggering immediately.
+  // 2018-04-23 Lane 2 was fixed.
+  $scope.lanes = [1,3,4];
+  
+
+
+  $scope.laneColors = {1:'Blue', 2:'Yellow', 3:'Green', 4:'Red'};
+  $scope.allLanes = [1,2,3,4];
+  
+  $scope.enableSimulation = false;
+
+  $scope.event = {};
+  
+  $scope.webViewLink = '';
+  $scope.shortUrl = ''; 
+  $scope.raceTimes = [,0,0,0,0];  // Begin at index 1
+  
+  $scope.initTime = (new Date()).toString();
+
+
+  $scope.messages = [
+
+    'If your name and car appear under NOW RACING, place your car on the track. Remember to retrieve your car at the finish line after each race.',
+
+    'Each car will race once on each lane. Only the best time will count.',
+
+    'View live results at <b>UtahValleyPinewoodDerby.com</b>',
+
+    'Parents, thank you for keeping your children away from the track.',
+
+    'The first pinewood derby was held on May 15, 1953 at Manhattan Beach, California.',
+    
+    'The pinewood derby was created as a more accessible alternative to the Soap Box Derby.',
+    
+    '"I wanted to devise a wholesome, constructive activity that would foster a closer father-son relationship and promote craftsmanship and good sportsmanship through competition." - Don Murphy, Founder of the Pinewood Derby',
+    
+    'Live results from this race can be found at <b>UtahValleyPinewoodDerby.com</b>.',
+
+    'Where are books about pinewood derby cars kept in the library?',
+
+    'Where are books about pinewood derby cars kept in the library?<br><br><b>In the non-friction section.</b>',
+    
+    'In October 1954, Boys\' Life Magazine offered to provide plans for a track, starting, and finishing line mechanisms for 15 cents.',
+    
+    'The pinewood derby track, cars, and rules have changed very little since their inception 65 years ago.',
+    
+    'Since the first pinewood derby, Cub Scouts have built close to 100 million pinewood derby cars!',
+
+    'If all the pinewood derby cars ever built were laid end-to-end, the line of cars would stretch halfway around the earth.',
+    
+    'The first pinewood derby track used a simple electronic circuit comprising a pair of doorbell buttons and lightbulbs to indicate the winner of each race.',
+    
+    'The electronic timer used on this track is accurate to a twenty-thousandth of a second and can detect a first-place finish by less than a hundredth of an inch.',
+
+    'What is the laziest part of a car?',
+
+    'What is the laziest part of a car?<br><br><b>The wheels, because they\'re always tired.</b>',
+    
+    'View a Google spreadsheet of live results on your mobile device by visiting <b>UtahValleyPinewoodDerby.com</b>.',
+    
+    'A typical pinewood derby track is between 32 and 40 feet long, and four feet high.',
+
+    'The longest pinewood derby track ever constructed was in Ashland, Nebraska, and measured 1,819 feet in length, longer than six football fields. The winning car\'s time was 1 minute and 17 seconds.',
+    
+    'If a pinewood derby car racing down a track was enlarged to the size of a real automobile, it would be speeding along at more than 200 miles per hour!',
+
+    ''
+
+  ];
+
+  $scope.messageIndex = 0;
+  
+  console.log("Initializing controller at " + $scope.initTime);
+  
+  
+  
+  $interval(function() {
+    var d = new Date();
+    var hr = d.getHours();
+    var min = d.getMinutes();
+    var ampm = "am";
+    if(hr > 12) {
+      hr -= 12;
+      ampm = "pm";
+    }
+    $scope.wall_time = hr + ":" + ("0" + min).substr(-2) + " " + ampm;
+    
+  }, 1000);
+  
+  if($state.current.name == "event-details.race") {
+    $state.go('event-details');
+  }
+  
+  if($stateParams.eventId) {
+    
+    $http.get('/api/event', {params: { eventId: $stateParams.eventId } }).then(function(result) {
+      if(result.data.err) {
+        alert("Oops!");
+      }
+      else {
+        $scope.event = result.data.doc;
+        $scope.resultList = $scope.getResultList();
+      }
+    },
+    function(reason) {
+      console.log(reason);
+    });
+    
+    $http.get('/api/eventResultsWebViewLink', {params: { eventId: $stateParams.eventId } }).then(function(result) {
+      $scope.webViewLink = result.data.webViewLink;
+      $scope.shortUrl = result.data.shortUrl;
+    },
+    function(reason) {
+      console.log(reason);
+    });
+      
+  }
+
+  $scope.filterEmptyResults = function(value, index, array) {
+    return value.result.time > 0;
+  };
+  
+  $scope.editEvent = function() {
+  
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: 'event-new.html',
+      controller: 'EventNewCtrl',
+      size: 'lg',
+      resolve: {
+        options: function () {
+          return {
+            heading: "Edit Event",
+            okButton: "Update",
+            model: {
+              name: $scope.event.name,
+              date: $scope.event.date,
+              code: $scope.event.code,
+              multiplier: $scope.event.multiplier,
+              options: $scope.event.options
+            }
+          };
+        }
+      }
+    });
+    
+    modalInstance.result.then(function (updatedEvent) {
+      updatedEvent._id = $scope.event._id;
+      $http.post('/api/eventUpdate', updatedEvent).then(function(response) {
+        if(response.data.err) {
+          alert("Oops!");
+        }
+        else {
+          console.log(response);
+          $scope.event.name = response.data.doc.name;
+          $scope.event.date = response.data.doc.date;
+          $scope.event.code = response.data.doc.code;
+          $scope.event.multiplier = response.data.doc.multiplier;
+          $scope.event.options = response.data.doc.options;
+        }        
+      },
+      function(reason) {
+        alert("Oops!");
+        console.error(reason);
+      });
+    },
+    function() {
+      // All done
+    });
+  
+  };
+  
+  $scope.deleteEvent = function() {
+  
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: 'event-delete.html',
+      controller: 'EventDeleteCtrl',
+      size: 'sm',
+    });
+    
+    modalInstance.result.then(function (result) {
+      $http.post('/api/eventDelete', {eventId:$scope.event._id}).then(function(response) {
+        if(response.data.err) {
+          alert("Oops!");
+        }
+        else {
+          console.log(response);
+          $state.go('events-list');
+        }        
+      },
+      function(reason) {
+        alert("Oops!");
+        console.error(reason);
+      });
+    },
+    function() {
+      // All done
+    });
+  
+  };
+  
+  var reload = function() {
+    return $http.get('/api/event', {params: { eventId: $stateParams.eventId } }).then(function(result) {
+      if(result.data.err) {
+        alert("Oops!");
+      }
+      else {
+        $scope.event = result.data.doc;
+      }
+      return result;
+    },
+    function(reason) {
+      console.log(reason);
+    });
+  };
+  
+  $scope.eventDeleteResults = function() {
+  
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: 'event-delete-results.html',
+      controller: 'EventDeleteResultsCtrl',
+      size: 'sm',
+    });
+    
+    modalInstance.result.then(function (result) {
+      $http.post('/api/eventDeleteResults', {eventId:$scope.event._id}).then(function(response) {
+        if(response.data.err) {
+          alert("Oops!");
+        }
+        else {
+          console.log(response);
+          reload().then(function() {
+            $scope.resultList = $scope.getResultList();
+          });
+          
+          // Strange bug: when using $state.reload(), then racingLane and onDeckLane are undefined in the socket event handler, even after assigning them in gotoRace! Very strange. This locally defined reload() function works though. UPDATE: This was caused by using a singleton socket.io dependency that did not unregister socket.on events when the controller was reloaded.
+        }        
+      },
+      function(reason) {
+        alert("Oops!");
+        console.error(reason);
+      });
+    },
+    function() {
+      // All done
+    });
+  
+  };
+  
+  $scope.resultUpdate = function() {
+    $http.post('/api/resultUpdate', {eventId:$scope.event._id}).then(function(response) { 
+      console.log(response);
+    }, function(reason) {
+      console.log(reason);
+    });
+  };
+  
+  $scope.addCars = function() {
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: 'addCars.html',
+      controller: 'AddCarsCtrl',
+      size: 'lg',
+      resolve: {
+        options: function () {
+          return {
+            heading: "New Car",
+            okButton: "Add",
+          };
+        }
+      }
+    });
+    
+    modalInstance.result.then(function (newCar) {
+      // The server will remove the imageData from newCar before saving in the db, and it will save the image data to a file with name equal to the _id of the newly created car.
+      $http.post('/api/newCarSave', {car: newCar, eventId: $scope.event._id}).then(function(result) {
+        if(result.data.err) {
+          alert("Oops!");
+          console.log(result.data.err);
+        }
+        else {
+          $scope.event.cars.push(result.data.car);
+          // Re-open the dialog
+          $scope.addCars();
+        }
+      },
+      function(reason) {
+        alert("Oops!");
+        console.log(reason);
+      });
+      
+    },
+    function() {
+      // All done
+    });
+  };
+  
+  $scope.duplicateName = function() {
+    var allNames = [];
+    if($scope.event.cars) {
+      for(var i=0; i<$scope.event.cars.length; i++) {
+        allNames.push($scope.event.cars[i].name);
+      }
+      allNames.sort();
+      for(var i=0; i<allNames.length-1; i++) {
+        if(allNames[i] === allNames[i+1]) {
+          return allNames[i];
+        }
+      }
+    }
+    return null;
+  };
+  
+  $scope.gotoRace = function() {
+
+    // It takes two loops through moveToNextRun to get the cars into the racing position.
+    for(var iter=0; iter<2; iter++) {
+      // Check to see if any cars are currently racing. If so, return early.
+      for(var j=0; j<$scope.event.cars.length; j++) {
+        if($scope.event.cars[j].racingLane)
+          break;
+      }
+      $scope.moveToNextRun();
+    }
+    $scope.status = "READY";
+    
+    $scope.$broadcast('initializeInstantReplayStream');
+
+    // Transition to child state 
+    $state.go('event-details.race');
+  };
+  
+  $scope.saveResult = function(car, lane, time, date) {
+  
+    car.results.push({lane: lane, time: time, date: date});
+    $http.post('/api/result', {carId: car._id, lane:lane, time:time, date:date}).then(function(result) {
+    
+      console.log(result.data);
+    
+    }, function(reason) {
+      console.log(reason);
+    });
+  
+  };
+
+  $scope.deleteResult = function(result) {
+  
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: 'result-delete.html',
+      controller: 'ResultDeleteCtrl',
+      size: 'sm',
+    });
+    
+    modalInstance.result.then(function (modalResult) {
+      $http.post('/api/resultDelete', {resultId:result._id}).then(function(response) {
+        if(response.data.err) {
+          console.log(response.data);
+          alert("Oops!");
+        }
+        else {
+          console.log(response);
+          result.time = "DELETED";
+          $scope.resultList = $scope.getResultList();
+          //$state.go($state.current, {}, {reload: true});
+        }        
+      },
+      function(reason) {
+        alert("Oops!");
+        console.error(reason);
+      });
+    },
+    function() {
+      // All done
+    });
+  
+  };
+  
+  
+  $scope.deferTemporarily = function(lane) {
+    // Remove everyone from the race, defer the car, and recompute
+    var cars = $scope.event.cars;
+    
+    var toDefer = $scope.getRacing(lane);
+    toDefer.deferredTemporarily = true;
+    
+    for(var j=0; j<cars.length; j++) {
+      cars[j].onDeckLane = 0;
+      cars[j].racingLane = 0;
+    }
+    
+    $scope.moveToNextRun();
+    $scope.moveToNextRun();
+  };
+  
+  $scope.deferPermanently = function(lane) {
+    var cars = $scope.event.cars;
+    
+    var toDefer = $scope.getRacing(lane);
+    toDefer.deferredPermanently = true;
+    
+    for(var j=0; j<cars.length; j++) {
+      cars[j].onDeckLane = 0;
+      cars[j].racingLane = 0;
+    }
+    
+    $scope.moveToNextRun();
+    $scope.moveToNextRun();
+  };
+  
+  $scope.moveToNextRun = function() {
+  
+    // Have the previous results been saved...?
+    
+    var cars = $scope.event.cars;
+   
+/*   
+    // Make up some random results
+    for(var j=0; j<cars.length; j++) {
+      if(cars[j].racingLane) {
+        $scope.saveResult(cars[j], cars[j].racingLane, 3 + Math.random());
+      }
+    }
+  */
+  
+    // Move each of the cars on deck to racing
+    
+    for(var j=0; j<cars.length; j++) {
+    
+      cars[j].racingLane = cars[j].onDeckLane;
+      cars[j].onDeckLane = 0;
+    }
+    
+    // Calculate next cars to be on deck
+    
+    // This formula is deterministic so that the race order will be recomputed if the page is refreshed
+    for(var idx in $scope.lanes) {
+      var i = $scope.lanes[idx];
+      // Calculate a score for each car on this lane
+      var bestScore = null, bestCar = null;
+      
+      for(var j=0; j<cars.length; j++) {
+        var car = cars[j];
+        var score = 0;
+        
+        // Has this car run on this lane enough times yet?
+        if(car.results.filter(function(e) { return e.lane === i; }).length >= $scope.event.multiplier) {
+          score += 1e12;
+        }
+        
+        // How many times has this car ran on this lane?
+        score += car.results.filter(function(e) { return e.lane === i; }).length * 1e5;
+        
+        // Is it racing right now on this lane?
+        if(car.racingLane === i) {
+          score += 1e12;
+        }
+        
+        // Is it racing right now on any lane?
+        if(car.racingLane) {
+          score += 1e4;
+        }
+        
+        // Has it already been scheduled for the next race?
+        if(car.onDeckLane) {
+          score += 1e12;
+        }
+        
+        // Is the car deferred?
+        if(car.deferredTemporarily || car.deferredPermanently) {
+          score += 1e12;
+        }
+        
+        // How many times has the car raced?
+        score += car.results.filter(function(e) { return e; }).length * 1e4;
+        
+        // Subtract the car's best time
+        var times = car.results.filter(function(e) { return e; }).map(function(e) { return e.time; });
+        if(times.length) {
+          score -= Math.min.apply(null, times);
+        }
+       
+        if(score < 9e11 && (score < bestScore || bestScore === null)) {
+          bestScore = score;
+          bestCar = car;
+        }
+      }
+      
+      if(bestCar) {
+        bestCar.onDeckLane = i;
+      }
+    }
+    
+    // Un-defer all temporarily deferred cars
+    for(var j=0; j<cars.length; j++) {
+      cars[j].deferredTemporarily = false;
+    }
+    
+    
+  };
+  
+  $scope.getOnDeck = function(lane) {
+    for(var i in $scope.event.cars) {
+      if($scope.event.cars[i].onDeckLane === lane) {
+        return $scope.event.cars[i];
+      }
+    }
+  };
+    
+  $scope.getRacing = function(lane) {
+    for(var i in $scope.event.cars) {
+      if($scope.event.cars[i].racingLane === lane) {
+        return $scope.event.cars[i];
+      }
+    }
+  };
+  
+  $scope.getOnDeckId = function(lane) {
+    var thing = $scope.getOnDeck(lane);
+    if(thing) {
+      return thing._id;
+    }
+    else {
+      return "none";
+    }
+  };
+  
+  $scope.getRacingId = function(lane) {
+    var thing = $scope.getRacing(lane);
+    if(thing) {
+      return thing._id;
+    }
+    else {
+      return "none";
+    }
+  };
+  
+  $scope.getOnDeckName = function(lane) {
+    var thing = $scope.getOnDeck(lane);
+    if(thing) {
+      return thing.name;
+    }
+    else {
+      return "Unassigned";
+    }
+  };
+  
+  $scope.getRacingName = function(lane, opts) {
+    opts = opts || {};
+    var thing = $scope.getRacing(lane);
+    if(thing) {
+      return thing.name;
+    }
+    else {
+      if(opts.colorIfUnassigned)
+        return $scope.laneColors[lane] + " Lane";
+      else
+        return "Unassigned";
+    }
+  };
+  
+  $scope.getPlace = function(lane) {
+    var place = 1;
+    if($scope.raceTimes[lane]) {
+      for(i in $scope.lanes) {
+        if($scope.lanes[i] != lane && $scope.raceTimes[$scope.lanes[i]] && $scope.raceTimes[$scope.lanes[i]] < $scope.raceTimes[lane]) {
+          place++;
+        }
+      }
+      return place;
+    }
+    else {
+      return '';
+    }
+  };
+
+  $scope.getBestTimeThisRace = function() {
+    var bestTime = 999;
+    for(i in $scope.lanes) {
+      if($scope.raceTimes[$scope.lanes[i]] && $scope.raceTimes[$scope.lanes[i]] < bestTime) {
+        bestTime = $scope.raceTimes[$scope.lanes[i]];
+      }
+    }
+    return bestTime;
+  };
+
+  $scope.standingsThisRace = [];
+
+  $scope.standings = [];
+  $scope.computeStandings = function() {
+
+    // Create array, then sort by bestTime:
+    /**
+     * [
+     *   {
+     *     name,
+     *     bestTime
+     *   }
+     * ]
+     */
+    var bestBestTime = 9999;
+    var allTimes = [];
+    for(var i=0; i<$scope.event.cars.length; i++) {
+      var car = $scope.event.cars[i];
+      var bestTime = 9999;
+      for(var j=0; j<car.results.length; j++) {
+        if(car.results[j].time < bestTime) {
+          bestTime = car.results[j].time;
+        }
+      }
+      if(bestTime < 9999) {
+        allTimes.push({
+          name: car.name,
+          time: bestTime
+        });
+        if(bestTime < bestBestTime) {
+          bestBestTime = bestTime;
+        }
+      }
+    }
+
+    allTimes.sort(function(a, b) { return a.time - b.time; });
+
+    for(var i=0; i<allTimes.length; i++) {
+      allTimes[i].place = i+1;
+      allTimes[i].deltaTime = allTimes[i].time - bestBestTime;
+    }
+
+    $scope.standings = [];
+
+    for(var i=0; i<allTimes.length; i++) {
+      let j = i;
+      if(i == 12) break;
+      $timeout(function() {
+        $scope.standings.push(allTimes[j]);
+      }, 8000 + j*100);
+    }
+
+
+  };
+  
+  $scope.getResults = function(car, lane) {
+    return car.results.filter(function(e) { return e.lane === lane; }).map(function(e) { return e.time.toFixed(4); }).join(', ');
+  };
+  
+  $scope.resultList = [];
+  
+  $scope.status = "READY";
+  
+  $scope.getResultList = function() {
+    
+    // BEFORE:
+    /* event
+     * |
+     * +--[car]
+     *     |
+     *     +--[result]
+     *         |
+     *         +--lane
+     *         +--time
+     *         +--date
+     */
+
+    // AFTER:
+    
+    /* [array]
+     *  |
+     *  +--date
+     *  +--[lane]
+     *      |
+     *      +--car
+     *      +--result
+     */
+    // We need to take all results from all cars in this event, add them to a hash table with date as the key, then sort them.
+
+    var thash = {};
+    var allKeys = [];
+    for(var i=0; i<$scope.event.cars.length; i++) {
+      var car = $scope.event.cars[i];
+      for(var j=0; j<car.results.length; j++) {
+        var result = car.results[j];
+        var d = (new Date(result.date)).getTime();
+        
+        if(!thash.hasOwnProperty(d)) {
+          allKeys.push(d);
+          thash[d] = [];
+        }
+        
+        thash[d][result.lane] = {car: car, result: result};
+      }
+    }
+    
+    allKeys.sort(function(a, b) { return b - a; });
+    
+    for(var i=0; i<allKeys.length; i++) {
+      var date = new Date(allKeys[i]);
+      var lanes = thash[allKeys[i]];
+      
+      // Remove empty results, preserving the order
+      for(var j=lanes.length-1; j>=0; j--) {
+        if(!lanes[j]) {
+          lanes.splice(j, 1);
+        }
+      }
+      
+      allKeys[i] = {
+        date: date,
+        lanes: lanes
+      };
+    }
+    
+    return allKeys;
+        
+  };
+  
+  /* Real-time track events are handled over socket.io */
+   
+  function tick() {
+    $scope.currentTime = new Date();
+    if($scope.status === "RACING" || $scope.status === "ENDED") {
+      $timeout(tick, 52);   // The 52 is to avoid a repeating pattern (0.000, 0.050, 0.100, 0.150, etc.)
+    }
+  };
+  
+  socket.removeAllListeners("stopRace");
+  socket.on("stopRace", function(data) {
+    // Ignore event if not on the racing page 
+    if($state.current.name != "event-details.race")
+      return console.log("Info: ignoring event stopRace");
+
+    $scope.status = "ENDED";
+    
+    // Prepend new result
+    /* [array]
+     *  |
+     *  +--date
+     *  +--[lane]
+     *      |
+     *      +--car
+     *      +--result
+     */
+  
+    $timeout(function() {
+      $scope.$broadcast('stopRecording');
+    }, 400);
+    
+    $timeout(function() {
+      $scope.$broadcast('showInstantReplay');
+    }, 600);
+
+    // TODO: Show preview of racing next here
+
+    $scope.computeStandings();
+
+  });
+  
+  socket.removeAllListeners("readyForStart");
+  socket.on("readyForStart", function(data) {
+
+    
+
+    // Ignore event if not on the racing page
+    if($state.current.name != "event-details.race")
+      return console.log("Info: ignoring event readyForStart");
+
+  
+    // Add result of this race to our resultList
+    var lanes = [];
+  
+    for(i in $scope.lanes) {
+    
+      if($scope.raceTimes[$scope.lanes[i]]) {
+    
+        if($scope.getRacing($scope.lanes[i])) {
+          lanes[i] = {
+            car: $scope.getRacing($scope.lanes[i]),
+            result: {
+              time: $scope.raceTimes[$scope.lanes[i]]
+            }
+          };
+        }
+        else {
+          if($scope.raceTimes[$scope.lanes[i]]) {
+            // No assigned car, but display the time anyway
+            lanes[i] = {
+              car: { _id: "none", name: " " },
+              result: {
+                time: $scope.raceTimes[$scope.lanes[i]]
+              }
+            };
+          }
+        }
+      }
+      else {
+        lanes[i] = { };
+      }
+    }
+   
+    var newResult = {
+      date: new Date($scope.gateReleaseTime),
+      lanes: lanes
+    };
+    
+    $scope.resultList.splice(0, 0, newResult);
+     
+    var timer = 0;
+    //$timeout(function() { $scope.animateRacing = true; }, timer);
+    //$timeout(function() { $scope.animateOnDeckMoveUp = true; }, timer);
+  
+    //timer += 500;  // 500
+    $timeout(function() { 
+      $scope.animateRacing = false;
+      $scope.animateOnDeckMoveUp = false;
+      $scope.animateOnDeckAppear = true; 
+      $scope.moveToNextRun();
+      $scope.status = "READY";
+    }, timer);
+    
+    timer += 1000;
+    
+    $timeout(function() { $scope.animateOnDeckAppear = false;  }, timer);
+    
+    $timeout(function() {
+      for(i in $scope.lanes) {
+        $scope.raceTimes[$scope.lanes[i]] = 0;
+      }
+    }, 1000);
+      
+    // Reset the video and mediaRecorder
+    $scope.$broadcast('startVideo');
+    $scope.$broadcast('hideVideo');
+
+    $scope.standingsThisRace = [];
+    $scope.standings = [];
+
+    $scope.messageIndex = ($scope.messageIndex + 1) % $scope.messages.length;
+
+  });
+ 
+  
+  socket.removeAllListeners('startingGateReleased');   // If controller is reinitialized, make sure the old $scope doesn't receive any events
+  socket.on('startingGateReleased', function(data) {
+    // Ignore event if not on the racing page
+    if($state.current.name != "event-details.race")
+      return console.log("Info: ignoring event startingGateReleased");
+    
+    // The starting gate was released!
+    if($scope.status === "READY") { 
+      $scope.gateReleaseTime = Date.now();
+      $scope.status = "RACING";
+      $scope.$broadcast('showVideo');
+      $scope.$broadcast('startRecording');
+      tick();
+    }
+    else {
+      alert("Starting gate was released prematurely. Please reset.");
+    }
+    
+    
+  });
+
+  /* 
+   * I just realized the big bug here is that if the controller is unloaded and reinitialized, the old socket.on events still remain and continue
+   * to fire on the old controllers. That's why everything is getting out of sync, why we were getting double results being saved, and so forth.
+   * Both socket.on events, each belonging to a different controller, were writing to the database. Nasty bug!
+   *
+   * I finally realized what was happening when I outputted the timestamp that the $scope was created inside socket.on("trigger"). When I saw 
+   * that two $scopes with different timestamps were getting the trigger called on them, it all clicked.
+   *
+   * The solution is to call "removeAllListeners" on each listener before calling "on". This ensures that any prior listeners are removed.
+   */
+
+  socket.removeAllListeners('trigger');   // If controller is reinitialized, make sure the old $scope doesn't receive any events
+  socket.on('trigger', function(data) {
+    
+    // Ignore event if not on the racing page
+    if($state.current.name != "event-details.race")
+      return console.log("Info: ignoring event trigger");
+    
+    
+    console.log(data);
+    // A car crossed the finish line.
+    // We are guaranteed not to receive more than one trigger per lane.
+    
+    
+    if($scope.status === "RACING") {    
+      
+      if($scope.raceTimes[data.lane] === 0) {
+        $scope.raceTimes[data.lane] = data.time;
+        
+        if($scope.getRacing(data.lane)) {
+          $scope.saveResult($scope.getRacing(data.lane), data.lane, data.time, new Date($scope.gateReleaseTime));
+        }
+        
+      }
+    }    
+    
+    $scope.standingsThisRace.push({
+      place: $scope.standingsThisRace.length + 1,
+      name: $scope.getRacingName(data.lane, {colorIfUnassigned:true}),
+      time: data.time,
+      deltaTime: $scope.standingsThisRace.length > 0 ? data.time - $scope.standingsThisRace[0].time : 0
+    });
+    
+  });
+  
+  socket.removeAllListeners('serialState');
+  socket.on('serialState', function(data) {
+    $scope.serialConnected = data.connected;
+    $scope.serialError = data.err;
+    $scope.serialPort = data.port;
+  });
+  
+  // Simulation
+  $scope.simulateStartGate = function() {
+  
+    socket.emit('simulate', "S");
+    
+    var maxTime = 0;
+    for(var i=0; i<4; i++) {
+      (function(ii) {
+        var time = Math.random() * 500 + 3000;
+        maxTime = Math.max(time, maxTime);
+        $timeout(function() {
+          $scope.simulateLane(ii, time);
+        }, time);
+      })(i);
+    }
+    
+    $timeout(function() { socket.emit('simulate', 'E'); }, maxTime + 10);
+    
+  };
+
+  $scope.simulateResetGate = function() {
+    socket.emit('simulate', "R");
+    
+  };
+  
+  $scope.simulateLane = function(lane, time) {
+    socket.emit('simulate', "T," + lane + "," + Math.floor(time*1000));
+  };
+});

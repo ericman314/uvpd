@@ -1,0 +1,16 @@
+<p><a ng-href="/events-list">Back to all events</a></p>
+<h1>Calibrate</h1>
+
+<button ng-click="zero()">Zero</button>
+<button ng-click="span()">Span</button>
+<br><br>
+Weight: <strong>{{weight.oz}} oz</strong>
+<br>
+Center of mass: <strong>{{weight.pos}} inches from front</strong>
+<br>
+
+<canvas class="chart chart-line"
+        chart-data="spans"
+        chart-series="series"
+        chart-options="options">
+</canvas>

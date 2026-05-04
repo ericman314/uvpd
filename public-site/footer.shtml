@@ -1,0 +1,27 @@
+<div class="footerOuter">
+<div class="footer">
+
+  &copy; 2021 Utah Valley Pinewood Derby, LLC
+
+</div>
+</div>
+
+<!-- <div class=modalWrapper id=reservationForm onclick="hideReservationForm();">
+    <div class=modalInnerWrapper>
+      <iframe class=modal src="https://docs.google.com/forms/d/e/1FAIpQLSeltFzaGPqtZyB8LaaBQ-hS-HcjGLTheiwkrX9eXTXhkMVKbA/viewform?embedded=true" frameborder="0" >Loading...</iframe>
+    </div>
+  </div>
+  
+    <script>
+      function showReservationForm() {
+        document.getElementById('reservationForm').className = "modalWrapper visible";
+        return false;
+      }
+      
+      function hideReservationForm() {
+        document.getElementById('reservationForm').className = "modalWrapper";
+        return false;
+      }
+        
+    </script>
+     -->

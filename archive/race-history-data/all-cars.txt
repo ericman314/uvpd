@@ -1,0 +1,175 @@
+resultId,ResultTime,lane,time,carId,Name,eventDate,multiplier,eventId,eventName
+Hiram: 2 achievements. Fred Flintstone Car|Fuel-Efficient Vehicle
+Noble: 1 achievements. Finely Tuned
+Alan: 0 achievements. 
+Trent: 1 achievements. Photo Finish 2
+Jack: 1 achievements. Come-back Kid
+Brenden: 0 achievements. 
+Oakley: 0 achievements. 
+Brigham: 1 achievements. Photo Finish 1
+Mystery Machine: 1 achievements. Photo Finish 2
+Dallin: 0 achievements. 
+Cole B: 1 achievements. Photo Finish 2
+Dallin S.: 0 achievements. 
+Jared: 2 achievements. Photo Finish 1|Photo Finish 2
+Cole: 1 achievements. Fuel-Efficient Vehicle
+Jared A: 1 achievements. Finely Tuned
+Zach: 2 achievements. Finely Tuned|Photo Finish 1
+Jack L: 0 achievements. 
+Lance: 1 achievements. Finely Tuned
+Andrew C: 1 achievements. Fuel-Efficient Vehicle
+Cameron: 2 achievements. Cutting-Edge|Fuel-Efficient Vehicle
+Andrew W: 0 achievements. 
+Grant: 0 achievements. 
+Marcelus: 0 achievements. 
+Phoenix: 2 achievements. Fred Flintstone Car|Fuel-Efficient Vehicle
+Thomas K: 0 achievements. 
+Colby: 0 achievements. 
+Raymond: 2 achievements. Cutting-Edge|Top 10%
+Mckay: 1 achievements. Come-back Kid
+Josh: 1 achievements. Cutting-Edge
+Ozzy: 1 achievements. Photo Finish 1
+Nicolai: 1 achievements. Cutting-Edge
+Cash: 0 achievements. 
+Christopher: 0 achievements. 
+Fin: 0 achievements. 
+Tyler: 0 achievements. 
+Mason: 1 achievements. Photo Finish 1
+Luca: 2 achievements. Top 10%|Top 5%
+Ryan H: 0 achievements. 
+Landon: 1 achievements. Well-Rounded Car
+Alex: 0 achievements. 
+Trevor: 2 achievements. Cutting-Edge|Finely Tuned
+Ryan L: 0 achievements. 
+Drake: 1 achievements. Cutting-Edge
+Gage: 0 achievements. 
+Keenan: 1 achievements. Come-back Kid
+Konrad: 1 achievements. Come-back Kid
+Lucas: 0 achievements. 
+Joshua: 1 achievements. Fuel-Efficient Vehicle
+Porter: 0 achievements. 
+Kali'i: 0 achievements. 
+Cooper: 1 achievements. Fuel-Efficient Vehicle
+Cole: 2 achievements. Come-back Kid|Cutting-Edge
+Peter B: 0 achievements. 
+Spencer: 2 achievements. Finely Tuned|Photo Finish 1
+Enoch: 1 achievements. Finely Tuned
+Joshua: 0 achievements. 
+Yibol: 0 achievements. 
+Eli: 0 achievements. 
+James: 1 achievements. Cutting-Edge
+Josh: 1 achievements. Cutting-Edge
+Zack: 0 achievements. 
+Peter D: 3 achievements. Fred Flintstone Car|Fuel-Efficient Vehicle|Top 10%
+Bob: 2 achievements. Cutting-Edge|Photo Finish 1
+Chance: 1 achievements. Top 10%
+Sebi: 3 achievements. Finely Tuned|Photo Finish 1|Top 10%
+Matias: 1 achievements. Well-Rounded Car
+Edith: 2 achievements. Top 10%|Top 5%
+Grant: 1 achievements. The Runner Up
+Henry: 0 achievements. 
+Samuel: 0 achievements. 
+Justin: 1 achievements. Finely Tuned
+Braxton: 3 achievements. Top 1%|Top 10%|Top 5%
+Joseph: 1 achievements. Come-back Kid
+Brayden: 0 achievements. 
+Mia: 2 achievements. Photo Finish 1|Top 10%
+10 Luke: 0 achievements. 
+42 Wyatt: 0 achievements. 
+50 Jake K: 0 achievements. 
+98 Aydian: 1 achievements. Fuel-Efficient Vehicle
+110 Jake H: 0 achievements. 
+100 Daniel: 0 achievements. 
+42 Israel: 0 achievements. 
+113 Colby: 1 achievements. Fuel-Efficient Vehicle
+360 Brigham: 3 achievements. Finely Tuned|Photo Finish 1|Photo Finish 2
+Craig: 2 achievements. Photo Finish 2|The Runner Up
+2905 Angelina: 1 achievements. Photo Finish 2
+Flower Power Megan: 3 achievements. Finely Tuned|Top 10%|Top 5%
+21 Christine: 0 achievements. 
+17 Keller: 1 achievements. Cutting-Edge
+79 Miriam: 1 achievements. Photo Finish 1
+Abby: 3 achievements. Come-back Kid|Cutting-Edge|Photo Finish 2
+1 Kady: 0 achievements. 
+Googly Eyes Starr: 1 achievements. Come-back Kid
+11 Bryli: 0 achievements. 
+83 Millie: 0 achievements. 
+Blossoms Kira: 1 achievements. Finely Tuned
+16 Scarlet: 1 achievements. Well-Rounded Car
+Logan: 0 achievements. 
+Bryce: 2 achievements. Fred Flintstone Car|Fuel-Efficient Vehicle
+Quinn: 1 achievements. Photo Finish 1
+Porter: 3 achievements. Come-back Kid|Top 10%|Well-Rounded Car
+Ty: 0 achievements. 
+Asher: 0 achievements. 
+Zackary: 1 achievements. Come-back Kid
+Sam: 0 achievements. 
+Jordan: 1 achievements. Fuel-Efficient Vehicle
+Mason: 1 achievements. Top 10%
+Riley: 2 achievements. Come-back Kid|Well-Rounded Car
+Andrew: 0 achievements. 
+Jenson: 2 achievements. Photo Finish 1|Photo Finish 2
+Kasen: 0 achievements. 
+Josh: 2 achievements. Photo Finish 2|Top 10%
+J: 1 achievements. Well-Rounded Car
+Jack: 0 achievements. 
+Camden: 2 achievements. Finely Tuned|Photo Finish 1
+Jensen R: 1 achievements. Come-back Kid
+Tanner: 0 achievements. 
+Owen: 1 achievements. Photo Finish 2
+Will: 0 achievements. 
+Evan: 0 achievements. 
+Jack: 2 achievements. Top 10%|Top 5%
+Brighton: 0 achievements. 
+Bowen: 0 achievements. 
+Ammon: 1 achievements. Photo Finish 2
+Braken: 1 achievements. Finely Tuned
+Owen H: 2 achievements. Come-back Kid|Photo Finish 2
+Dominic: 1 achievements. Photo Finish 2
+Lincoln: 1 achievements. Photo Finish 2
+Hayden: 1 achievements. Come-back Kid
+Payton: 1 achievements. Photo Finish 2
+Jayden: 0 achievements. 
+Preston: 1 achievements. Finely Tuned
+Cedric: 0 achievements. 
+Eilee: 1 achievements. Well-Rounded Car
+Eliza: 0 achievements. 
+Annie: 1 achievements. Finely Tuned
+Savannah: 2 achievements. Finely Tuned|The Runner Up
+Elizabeth: 0 achievements. 
+Elsa: 0 achievements. 
+AJ: 4 achievements. Photo Finish 2|Top 1%|Top 10%|Top 5%
+Ben: 2 achievements. Photo Finish 2|Well-Rounded Car
+Dallin: 2 achievements. Come-back Kid|Photo Finish 2
+Dash: 2 achievements. Photo Finish 1|Top 10%
+Kenneth: 2 achievements. Top 10%|Top 5%
+Chandler: 3 achievements. Top 10%|Top 5%|Well-Rounded Car
+Griffin: 3 achievements. Photo Finish 1|Photo Finish 2|Top 10%
+Navi: 0 achievements. 
+Oli: 1 achievements. Fuel-Efficient Vehicle
+Michael: 2 achievements. Come-back Kid|Cutting-Edge
+Zach: 1 achievements. Finely Tuned
+Ryken: 0 achievements. 
+Parker: 0 achievements. 
+Isaac: 2 achievements. Cutting-Edge|Top 10%
+Devin: 1 achievements. Come-back Kid
+Tristen: 1 achievements. Well-Rounded Car
+Weston: 0 achievements. 
+Tave: 0 achievements. 
+Nate: 1 achievements. Cutting-Edge
+Taiven: 1 achievements. Come-back Kid
+Jaydon: 1 achievements. Come-back Kid
+Jonas: 1 achievements. Photo Finish 1
+Alan: 1 achievements. Photo Finish 2
+Lincoln: 0 achievements. 
+Max: 0 achievements. 
+Elijah: 1 achievements. Come-back Kid
+Oliver: 3 achievements. Finely Tuned|Photo Finish 1|Photo Finish 2
+TJ: 0 achievements. 
+Ashton: 1 achievements. Fuel-Efficient Vehicle
+Everett: 1 achievements. Photo Finish 1
+Hayden: 2 achievements. Photo Finish 1|Top 10%
+Nathaniel: 0 achievements. 
+Logan: 0 achievements. 
+Cillian: 1 achievements. Photo Finish 1
+Jerod: 2 achievements. Come-back Kid|Well-Rounded Car

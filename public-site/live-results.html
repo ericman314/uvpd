@@ -1,0 +1,127 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+  <meta name="description" content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+
+	<title>Utah Valley Pinewood Derby - Live Results</title>
+	<!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+	<link rel="stylesheet" href="main.css?v=2">
+	<link rel="icon" type="image/png" href="favicon.ico">
+	
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+
+<body id="top">
+<!--#include virtual="/nav.shtml"-->
+  
+	
+		<div class="pageContent-fullWidth center">
+      
+      <h1>RESULTS</h1>
+       
+        <p id="loading">Loading, please wait...</p>
+        
+        <p id="noResults" style="display:none;">Oops, there are no results available right now. (Results are available for 7 days after an event.)</p>
+        
+			  <div id="results" style="display:none;"></div>
+     
+		</div>
+    
+    <script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+    <script>
+    
+      var events, cars;
+    
+      function getEvents() {
+        $.get("/api/v2/recentEvents", function(data) {
+          events = data;
+          if(events && cars) {
+            updateEventsAndCars();
+          }
+        });
+      }
+      
+      function getCars() {
+        $.get("/api/v2/recentCars", function(data) {
+          cars = data;
+          if(events && cars) {
+            updateEventsAndCars();
+          }
+        });
+      }
+      
+      
+      
+      function updateEventsAndCars() {
+      
+        // Move the cars into the events
+        
+        for(var i=0; i<events.length; i++) {
+          events[i].cars = [];
+        }
+        
+        for(var i=0; i<cars.length; i++) {
+          for(var j=0; j<events.length; j++) {
+            if(events[j].Id == cars[i].EventId) {
+              events[j].cars.push(cars[i]);
+            }
+          }
+        }
+        
+        $results = $('#results');
+        
+        $results.empty();
+        
+        if(events.length > 1) {
+          $results.append('<p>Select an event:</p>');
+          for(var j=0; j<events.length; j++) {
+            $results.append('<p><a href="#' + events[j].Id + '">' + events[j].Name + '</a></p>');
+          }
+        }
+        
+        for(var j=0; j<events.length; j++) {
+          var $event = $('<div id="' + events[j].Id + '"></div>');
+          
+          $event.append('<hr>');
+          $event.append('<h2>' + events[j].Name + '</h2>');
+          $event.append('<p><a href="' + events[j].ResultsURL + '" target="_blank">View results in Google Sheets</a></p><br>');
+          var $imgContainer = $('<div class="imgContainer">');
+          $event.append($imgContainer);
+          if(events[j].cars) {
+            for(var i=0; i<events[j].cars.length; i++) {
+              var $imgWrapper = $('<div class="imgWrapper">');
+              $imgWrapper.append('<img src="/api/v2/cars/' + events[j].cars[i].Id + '.jpg">');
+              var $imgCaption = $('<div class="imgCaption">');
+              $imgCaption.append('<b>' + events[j].cars[i].Name + '</b>');
+              if(events[j].cars[i].BestTime) {
+                $imgCaption.append('<br>Best time: ' + events[j].cars[i].BestTime.toFixed(4));
+              }
+              $imgWrapper.append($imgCaption);
+              $imgContainer.append($imgWrapper);
+            }
+          }
+        
+          $event.append('<p><a href="#top">Back to top</a></p>');
+        
+          $results.append($event);
+        }
+        
+        
+        
+        $results.show();
+        $('#loading').hide();
+        
+        if(events.length == 0)
+          $('#noResults').show();
+       
+      }
+      
+      getEvents();
+      getCars();
+      
+      setInterval(getCars, 30000);
+    
+    </script>
+  <!--#include virtual="/footer.shtml"-->
+</body>
+</html>

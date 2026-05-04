@@ -1,0 +1,318 @@
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <meta name="description"
+    content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+
+  <title>Utah Valley Pinewood Derby - Check In</title>
+  <!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+  <link rel="stylesheet" href="main.css?v=3">
+  <link rel="icon" type="image/png" href="favicon.ico">
+  <style>
+    .inputfile {
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      overflow: hidden;
+      position: absolute;
+      z-index: -1;
+    }
+
+    .inputfile+label {
+      background: #AD431F;
+      padding: 8px;
+      color: #fff7f0;
+      font-weight: 300;
+      border: none;
+      display: inline-block;
+    }
+
+    .inputfile+label:hover {
+      color: white;
+      background: #e05520;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    #modal-example {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+    }
+    
+    #modal-example-container {
+      position: absolute;
+      left: 20px;
+      top:20px;
+      right:20px;
+      bottom:20px;
+      border: solid black 2px;
+      background: white;
+      padding: 0 10px;
+    }
+
+    .preview-wrapper {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .preview {
+      display: none;
+      height: 0;
+      padding-top: 75%; 
+      background: red;
+      background-size: cover;
+      background-position: center center;
+      width: 100%;
+    }
+
+  </style>
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+
+<body id="top">
+  <!--#include virtual="/nav.shtml"-->
+
+
+  <div class="pageContent center">
+
+    <h1 class="center">Race Check-In</h1>
+
+    <p class=center><b>Check your car into the race</b>
+      <p>
+
+        <div class="check-in-form-wrapper active-col-1">
+
+          <span class="check-in-form-bullet check-in-form-bullet-1"></span>
+          <span class="check-in-form-bullet check-in-form-bullet-2"></span>
+          <span class="check-in-form-bullet check-in-form-bullet-3"></span>
+
+          <form class="check-in-form" method="POST" action="/api/v3/checkin" enctype="multipart/form-data">
+            <div class="col col-1">
+              <h3>Participant's Information</h3>
+              <p>*First name:</p>
+              <p><input tabindex="-1" type="text" id="name" name="name"
+                  style="width:100%; max-width: 360px; margin: 0 auto; display: block;" />
+              </p>
+
+              <!-- <p>Den or group:</p>
+              <p class="small">For example: Wolf, Bear, Webelos, Boys, Girls, etc.</p>
+              <p><input tabindex="-1" id="den" type="text" name="den" style="width:100%; max-width: 360px; margin: 0 auto; display: block;" />
+              </p> -->
+
+              <button tabindex="-1" type="button" class="disabled" id="next-page-2">Next</button>
+            </div>
+
+            <div class="col col-2">
+              <h3>About Your Car</h3>
+              <p>Give your car a name:</p>
+              <p><input tabindex="-1" id="nickname" type="text" name="nickname"
+                  style="width:100%; max-width: 360px; margin: 0 auto; display: block;" /></p>
+
+              <p>*Attach a photo of your car (<a id="see-example">see example</a>):</p>
+
+              <div class='preview-wrapper'><div class='preview'></div></div>
+
+              <input id="resizedfile" name="photo" type="hidden" value="">
+
+              <p><input tabindex="-1" type="file" id="inputfile" accept="image/*" capture="environment"
+                  class="inputfile" />
+                <label for="inputfile" id="inputfile-label">Attach photo</label>
+              </p>
+
+              <br />
+              <button tabindex="-1" onClick="return goBack()" class="secondary">Back</button>
+              &nbsp;&nbsp;&nbsp;
+              <button tabindex="-1" type="button" class="disabled" id="next-page-3">Next</button>
+            </div>
+
+            <div class="col col-3">
+              <h3>Review</h3>
+
+              <p>Your name: <b><span class='nameReview'></span></b></p>
+              <!-- <p>Den or group: <b><span class='denReview'></span></b></p> -->
+              <p>Car's name: <b><span class='nickNameReview'></span></b></p>
+              <div class='preview-wrapper'><div class='preview'></div></div>
+
+
+              <p><i>Your name and photo of your car will be posted online.</i></p>
+              <button tabindex="-1" onClick="return goBack()" class="secondary">Back</button>
+              &nbsp;&nbsp;&nbsp;
+              <input tabindex="-1" type="submit" name="submit" value="Submit" />
+
+            </div>
+          </form>
+
+        </div>
+        <div style="clear:both;"></div>
+
+  </div>
+
+  <div id="modal-example">
+    <div id="modal-example-container">  
+      <p>Place your car on a plain, flat surface.</p>
+      <p>Center the car in the frame.</p>
+      <p>Your photo will be cropped to 4:3.</p>
+      <img src="img/car-photo-example.jpg"/>
+      <p class="center" style="color:#888; position: fixed; left: 0; bottom: 20; text-align:center; width: 100%">&#x2715; Close</p>
+    </div>
+  </div>
+
+  <script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+  <script>
+
+    function gotoPage(page, skipPushState) {
+      if (!skipPushState) {
+        history.pushState({ page: page }, null)
+        setModifiedState(true);
+      }
+      $wrap = $('.check-in-form-wrapper')
+      var clas = 'active-col-' + page
+      $wrap.removeClass('active-col-1')
+      $wrap.removeClass('active-col-2')
+      $wrap.removeClass('active-col-3')
+      $wrap.addClass(clas)
+      $('.check-in-form-bullet-1')[0].scrollIntoView()
+      return false;
+    }
+
+    function goBack() {
+      history.back()
+      return false;
+    }
+
+    function handleBeforeUnload() {
+      return true;
+    }
+
+    function setModifiedState(modState) {
+      if (modState) {
+        // Enable navigation prompt
+        window.addEventListener('beforeunload', handleBeforeUnload)
+      } else {
+        // Remove navigation prompt
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+      }
+    }
+
+    window.onpopstate = function (data) {
+      if (data.state && data.state.page) {
+        gotoPage(data.state.page, true)
+      }
+      else {
+        gotoPage(1, true)
+      }
+    }
+
+    var availableEvents = []
+
+    $(function () {
+
+      $.get("/api/v3/events?dayStart=0&dayEnd=4", function (data) {
+        availableEvents = data;
+        console.log(availableEvents)
+      });
+
+      $(document).ready(function () {
+        $('input').keypress(function (e) {
+          var code = (e.keyCode ? e.keyCode : e.which);
+          if ((code == 13) || (code == 10)) {
+            $(this).blur();
+            return false;
+          }
+        });
+      });
+
+      $(document).on('click', '#next-page-2:not(.disabled)', function (e) {
+        gotoPage(2);
+      })
+      
+      $(document).on('click', '#next-page-3:not(.disabled)', function (e) {
+        gotoPage(3);
+      })
+      
+
+      $(document).on('input', '#name', function (e) {
+        if ($('#name').val().trim() !== '') {
+          $('#next-page-2').removeClass('disabled')
+        } else {
+          $('#next-page-2').addClass('disabled')
+        }
+
+        $('.nameReview').text($('input#name').val())
+      })
+
+      $(document).on('input', '#nickname', function (e) {
+        $('.nickNameReview').text($('input#nickname').val())
+      })
+
+      $(document).on('input', '#den', function (e) {
+        $('.denReview').text($('input#den').val())
+      })
+
+      $('#see-example').on('click', function (e) {
+        $('#modal-example').show();
+      })
+
+      $('#modal-example').on('click', function(e) {
+        $('#modal-example').hide();
+      })
+
+      $('#inputfile').change(function (e) {
+        console.log(e.target.value)
+        var filename = e.target.value.split('\\').pop()
+        if (!filename) {
+          $('#inputfile-label').text('Attach photo')
+          $('.preview').hide()
+          $('#next-page-3').addClass('disabled')
+        } else {
+          $('#inputfile-label').text('Change')
+          
+          // Resize image
+          var reader = new FileReader();
+          reader.onload = function(readerEvent) {
+            var image = new Image()
+            image.onload = function(imageEvent) {
+              var canvas = document.createElement('canvas')
+              canvas.width = 640
+              canvas.height = 480
+              // TODO: Resize/crop/rotate
+              canvas.getContext('2d').drawImage(image, 0, 0, 640, 480)
+              var dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+              $('#resizedImage').val(dataUrl)
+              $('.preview').css('background-image', 'url("' + dataUrl + '")')
+              $('.preview').show()
+              $('#next-page-3').removeClass('disabled') 
+            }
+            image.src = readerEvent.target.result
+          }
+          reader.readAsDataURL(e.target.files[0])
+
+          
+          // var url = URL.createObjectURL(e.target.files[0])
+          // $('.preview').css('background-image', 'url("' + url + '")')
+          // $('.preview').show()
+          // $('#next-page-3').removeClass('disabled')
+        }
+      })
+
+      $('form.check-in-form').submit(function(e) {
+        setModifiedState(false)
+      })
+
+    })
+
+  </script>
+  <!--#include virtual="/footer.shtml"-->
+</body>
+
+</html>

@@ -1,0 +1,399 @@
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <meta name="description"
+    content="Pinewood Derby Track Rental in Utah County. Serving Provo, Orem, Lehi, Spanish Fork, Pleasant Grove, Springville, American Fork, and Eagle Mountain areas.">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Utah Valley Pinewood Derby - Live Results</title>
+  <!--<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>-->
+  <link rel="stylesheet" href="main.css?v=2">
+  <link rel="icon" type="image/png" href="favicon.ico">
+
+  <style>
+    .eventSelectButton {
+      margin-top: 12px;
+      cursor: pointer;
+      background: #f1e7d0;
+      width: 300px;
+      margin: 12px auto;
+      padding: 8px;
+      border: solid #333333 1px;
+    }
+
+    .eventSelectButton:hover {
+      background: #dbd0b4;
+    }
+
+    .eventName {
+      font-weight: bold;
+    }
+
+    button {
+      margin: 0 4px;
+      font-weight: 400;
+    }
+  </style>
+
+</head>
+<!--#include virtual="/reservation-modal.shtml"-->
+
+<body id="top">
+  <!--#include virtual="/nav.shtml"-->
+
+
+  <div class="pageContent-fullWidth center">
+
+    <h1>RESULTS</h1>
+
+    <div id="results"></div>
+
+  </div>
+
+  <script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+
+    localStorage.debug = '';
+
+    var socket = io('/');
+    socket.on('newdata', () => {
+      $.get("/api/v3/events?dayEnd=1", function (data) {
+        events = data;
+        event = events.find(function (e) { return e.eventId === parseInt(eventId) })
+        if (event.multiplier <= 2) { event.multiplier *= 4 }
+        updateView()
+      });
+      $.get("/api/v3/carsAndResultsByEventId", { eventId: eventId }, function (data) {
+        cars = data.cars
+        results = data.results
+        updateView()
+      });
+    })
+
+    var eventId
+    var events
+    var cars
+    var event
+    var view = 'events'
+    var resultLayout = 'grid' // or 'table'
+    var filterDen = ''
+
+    /* Show all the events we can choose from */
+    function showAllEvents() {
+      view = 'events'
+
+      updateView()
+      $.get("/api/v3/events?dayEnd=1", function (data) {
+        events = data;
+        updateView()
+      });
+    }
+
+    /* Show a specific event */
+    function showEvent(_eventId) {
+      eventId = _eventId
+      view = 'cars/' + eventId
+      if (events) {
+        event = events.find(function (e) { return e.eventId === parseInt(eventId) })
+        if (event.multiplier <= 2) { event.multiplier *= 4 }
+      } else {
+        $.get("/api/v3/events?dayEnd=1", function (data) {
+          events = data;
+          event = events.find(function (e) { return e.eventId === parseInt(eventId) })
+          if (event.multiplier <= 2) { event.multiplier *= 4 }
+          updateView()
+        });
+      }
+      cars = null
+
+
+      updateView()
+      $.get("/api/v3/carsAndResultsByEventId", { eventId: eventId }, function (data) {
+        cars = data.cars
+        results = data.results
+        updateView()
+      });
+    }
+
+    function updateView() {
+
+      // TODO: window push state
+
+      $con.empty()
+
+      var heading = ''
+      var lastHeading = heading
+      if (view === 'events') {
+        if (events) {
+          $con.append('<p>Choose an event below:</p>')
+          for (var i = 0; i < events.length; i++) {
+            var eventMoment = moment(events[i].eventDate)
+            if (moment().isBefore(eventMoment.add(1, 'day'))) {
+              heading = 'TODAY'
+            } else {
+              heading = eventMoment.format('YYYY')
+            }
+            if (heading !== lastHeading) {
+              $con.append('<br/><hr/><h3>' + heading + '</h3>')
+              lastHeading = heading
+            }
+            $con.append('<div class=eventSelectButton data-eventid="' + events[i].eventId + '"><div class=eventDate>' + moment(events[i].eventDate).format('ddd, MMM D, YYYY') + '</div><div class=eventName>' + events[i].eventName + '</div></div>')
+            // console.log(events[i])
+          }
+        } else {
+          $con.append('<p>Loading events, please wait...</p>')
+        }
+      } else if (view.startsWith('cars')) {
+
+
+        $con.append('<a href="javascript:void(0);" id="backToEvents">◄ Back</div><br/>')
+
+        if (event) {
+          $con.append('<h2>' + event.eventName + '</h2>')
+
+          var gridSelected = resultLayout === 'grid' ? ' selected' : ''
+          var tableSelected = resultLayout === 'table' ? ' selected' : ''
+          $con.append('<button id="buttonShowGrid" class="' + gridSelected + '">Grid</button><button id="buttonShowTable" class="' + tableSelected + '">Table</button><br/><br/>')
+
+          if (cars && results) {
+
+            if (resultLayout === 'grid') {
+              // Render grid layout
+              var $imgContainer = $('<div class="imgContainer">')
+              if (cars.length === 0) {
+                $con.append('No cars have been checked in yet.')
+              }
+              for (var i = 0; i < cars.length; i++) {
+                var $imgLink = $('<a href="/car?id=' + encodeURIComponent(cars[i].carId) + '"/>')
+                var $imgWrapper = $('<div class="imgWrapper">')
+                $imgLink.append($imgWrapper)
+                $imgWrapper.append('<img src="/api/v3/cars/' + cars[i].carId + '.jpg">')
+                var $imgCaption = $('<div class="imgCaption">')
+                $imgCaption.append('<div><b>' + cars[i].carName + '</b></div>')
+                if (cars[i].nickname) {
+                  $imgCaption.append('<div class="small"><b><i>' + cars[i].nickname + '</i></b></div>')
+                }
+                var thisCarResults = getCarResults(cars[i].carId)
+                if (thisCarResults.length > 0) {
+                  var bestTime = 10000
+                  var nTimes = 0
+                  for (var j = 0; j < thisCarResults.length; j++) {
+                    var time = thisCarResults[j].time
+                    if (time < 10) {
+                      bestTime = Math.min(bestTime, time)
+                      nTimes++
+                    }
+                  }
+                  if (nTimes > 0) {
+                    $imgCaption.append('<div class=small>Best time: ' + bestTime.toFixed(4) + '</div>')
+                  }
+
+                }
+                $imgWrapper.append($imgCaption)
+                $imgContainer.append($imgLink)
+              }
+              $con.append($imgContainer)
+
+            } else if (resultLayout === 'table') {
+              // Render table layout
+              // TODO: Filters and sort field
+
+              var $table = $('<table class="resultsTable">')
+              $table.append('<tr><td></td><td>Name</td><td>Car</td><td>Den</td><td><b>Best Time</b></td><td>Avg. Time</td><td colspan=' + event.multiplier + '>All Times</td><td>Achievements</td>')
+
+              // Get all distinct dens
+              var dens = {}
+              for (var i = 0; i < cars.length; i++) {
+                var den = cars[i].den || 'Other'
+                if (den) {
+                  dens[den] = true
+                }
+              }
+              var dens = Object.keys(dens)
+              if (dens.length > 1) {
+                // Render buttons to choose the den
+                var overallSelected = filterDen === '' ? ' selected' : ''
+                $con.append('<button class="buttonFilterDen' + overallSelected + '" data-den="">Overall</button>')
+                for (var i = 0; i < dens.length; i++) {
+                  var selected = dens[i] === filterDen ? ' selected' : ''
+                  $con.append('<button class="buttonFilterDen' + selected + '" data-den="' + dens[i] + '">' + dens[i] + '</button>')
+                }
+                $con.append('<br/><br/>')
+              }
+
+              console.log(dens);
+
+              var sortedAndFiltered = []
+
+              for (var i = 0; i < cars.length; i++) {
+                var thisCarResults = getCarResults(cars[i].carId)
+
+                if (filterDen === '' || (filterDen === 'Other' && !cars[i].den) || cars[i].den === filterDen) {
+
+                  var bestTime = 10000
+                  var bestTimeStr = ''
+                  var avgTime = 0
+                  var avgTimeStr = ''
+                  var nTimes = 0
+                  if (thisCarResults.length > 0) {
+                    for (var j = 0; j < thisCarResults.length; j++) {
+                      var time = thisCarResults[j].time
+                      if (time < 10) {
+                        bestTime = Math.min(bestTime, time)
+                        avgTime += time
+                        nTimes++
+                      }
+                    }
+                    if (nTimes > 0) {
+                      avgTime /= nTimes
+                      bestTimeStr = bestTime.toFixed(4)
+                      avgTimeStr = avgTime.toFixed(4)
+                    }
+                  }
+
+                  sortedAndFiltered.push({
+                    carId: cars[i].carId,
+                    carName: cars[i].carName,
+                    nickname: cars[i].nickname || '',
+                    den: cars[i].den || '',
+                    bestTime: bestTime,
+                    bestTimeStr: bestTimeStr,
+                    avgTime: avgTime,
+                    avgTimeStr: avgTimeStr,
+                    results: thisCarResults,
+                    allAchs: cars[i].allAchs || ''
+                  })
+                }
+              }
+
+              sortedAndFiltered.sort(function (a, b) {
+                if (a.bestTime < b.bestTime) {
+                  return -1;
+                } else if (a.bestTime > b.bestTime) {
+                  return 1;
+                } else {
+                  return 0;
+                }
+              })
+
+              var place = 0
+              var lastBestTimeStr = ''
+              for (var i = 0; i < sortedAndFiltered.length; i++) {
+                var car = sortedAndFiltered[i]
+                
+                if (lastBestTimeStr === car.bestTimeStr) {
+                  // Do not adjust place
+                } else {
+                  // Place is car's index in the sorted array plus one
+                  place = i + 1
+                }
+                $row = $('<tr>')
+                $row.append('<td>' + (car.results.length > 0 ? place : '') + '</td>')
+                $row.append('<td><a href="/car?id=' + encodeURIComponent(car.carId) + '">' + car.carName + '</a></td>')
+                $row.append('<td><i>' + (car.nickname || '') + '</i></td>')
+                $row.append('<td>' + (car.den || '') + '</td>')
+                $row.append('<td><b>' + car.bestTimeStr + '</b></td>')
+                $row.append('<td>' + car.avgTimeStr + '</td>')
+
+                for (var j = 0; j < car.results.length; j++) {
+                  // TODO: Color by lane?
+                  var time = car.results[j].time
+                  if (time < 10) {
+                    $row.append('<td>' + time.toFixed(4) + '</td>')
+                  } else {
+                    $row.append('<td>DNF</td>')
+                  }
+
+                }
+                for (var j = car.results.length; j < event.multiplier; j++) {
+                  $row.append('<td></td>')
+                }
+                console.log(car)
+                $row.append('<td>' + car.allAchs + '</td>')
+                $table.append($row)
+              }
+            }
+            $con.append($table)
+          }
+        }
+
+      } else {
+        $con.append('<p>Loading results</p>')
+      }
+    }
+
+    function getCarResults(carId) {
+      return results.filter(function (car) { return car.carId === carId })
+    }
+
+
+    $(function () {
+      $con = $('#results')
+
+      $(document).on('click', '.eventSelectButton', function (e) {
+        var eventId = $(this).attr('data-eventId')
+        window.history.pushState({ eventId: eventId }, '', window.location.pathname + "?event=" + eventId)
+        showEvent(eventId)
+      })
+      $(document).on('click', '#backToEvents', function (e) {
+        window.history.back();
+        showAllEvents();
+      })
+      $(document).on('click', '#buttonShowGrid', function (e) {
+        resultLayout = 'grid';
+        localStorage.setItem('resultLayout', resultLayout)
+        updateView();
+      })
+      $(document).on('click', '#buttonShowTable', function (e) {
+        resultLayout = 'table';
+        localStorage.setItem('resultLayout', resultLayout)
+        updateView();
+      })
+      $(document).on('click', '.buttonFilterDen', function (e) {
+        filterDen = $(this).attr('data-den')
+        updateView();
+      })
+
+      resultLayout = localStorage.getItem('resultLayout') || 'grid'
+
+      var params = new URLSearchParams(window.location.search)
+      if (params.has('event')) {
+        showEvent(params.get('event'))
+      } else {
+        showAllEvents();
+      }
+
+    })
+
+    window.onpopstate = function (e) {
+      console.log('popstate')
+      if (e.state === null) {
+        // View all events
+        showAllEvents();
+
+      } else if (e.state.eventId) {
+        // View specific event
+        showEvent(e.state.eventId)
+      }
+      console.log(e.state)
+    }
+
+    function escape(unsafe) {
+      if (!unsafe) return ""
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+
+
+  </script>
+  <!--#include virtual="/footer.shtml"-->
+</body>
+
+</html>

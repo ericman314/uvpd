@@ -1,0 +1,9 @@
+{
+  "https": false,
+  "localport": 8085,
+  "apiSecret": "REPLACE_ME_shared_secret_with_cloud_api",
+  "mysql_host": "localhost",
+  "mysql_user": "uvpd_user",
+  "mysql_pass": "REPLACE_ME",
+  "publicSiteUrl": "https://utahvalleypinewoodderby.com"
+}

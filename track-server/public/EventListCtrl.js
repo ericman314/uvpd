@@ -1,0 +1,253 @@
+angular.module('EventListCtrl', ['socket']).controller('EventListCtrl', function($scope, $state, $stateParams, $http, $timeout, $uibModal, socket, dbReplicator) {
+
+  $scope.eventList = [];
+  
+ 
+  $http.get('/api/eventList').then(function(result) {
+    if(result.data.err) {
+      console.error(result.data.err);
+    }
+    else {
+      $scope.eventList = result.data;
+    }
+  },
+  function(reason) {
+    console.log(reason);
+  });
+
+  
+   $scope.newEvent = function() {
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: 'event-new.html',
+      controller: 'EventNewCtrl',
+      size: 'lg',
+      resolve: {
+        options: function() {
+          return {
+            heading: "New Event",
+            okButton: "Create"
+          };
+        }
+      }
+    });
+    
+    modalInstance.result.then(function (newCar) {
+      $http.post('/api/eventNewSave', newCar).then(function(response) {
+        if(response.data.err) {
+          console.error(response.data.err);
+        }
+        else {
+          console.log(response);
+          $state.go('event-details', {eventId: response.data.insertId});
+          $scope.replicateDB({ eventId: response.data.insertId });
+        }        
+      },
+      function(reason) {
+        console.error(reason);
+      });
+    },
+    function() {
+      // All done
+    });
+  }
+
+  $scope.replicateDB = function() {
+    dbReplicator(null, true);
+  }
+  
+  
+ 
+  /*********** Model data *************/
+  // View state parameters
+  $scope.showLoading = true;
+  $scope.showServerNotResponding = false;
+  $scope.showLogin = false;
+  $scope.showEventCodeNotFound = false;
+  $scope.showEventDetails = false;
+  
+  // Data
+  $scope.cars = [];
+  $scope.categories = [];
+  $scope.events = [];
+  $scope.results = [];
+  $scope.runs = [];
+  
+  // Refactored data (probably a better way to do this?)
+  $scope.boards = [];
+  
+  // Other
+  $scope.eventCode = '';
+  
+  /************ UI helper functions *********/
+  // Gets the name of the currently loaded event
+  $scope.getEventName = function() {
+    var event = $scope.events[Object.keys($scope.events)[0]];
+    if(event) {
+      return event.Name;
+    }
+  };
+  
+  $scope.getEventDate = function() {
+    var event = $scope.events[Object.keys($scope.events)[0]];
+    if(event) {
+      return moment(event.Date).format("dddd, MMM D, YYYY");
+    }
+  };
+  
+  $scope.joinWithBr = function(arr) {
+    return arr.map(function(e, i) { return "Lane " + (i+1) + ": " + e; }).join('<br>');
+  };
+  
+  /************ UI Events ***************/
+  // User has submitted an event code
+  $scope.eventCodeChanged = function() {
+    socket.emit('code', { EventCode: $scope.eventCode });
+    $scope.showEventCodeNotFound = false;
+  };
+  
+  // User clicked on "Choose another event"
+  $scope.chooseAnotherEvent = function() {
+    $scope.showLogin = true;
+    setTimeout(function() {
+      document.getElementById('eventCodeInput').focus();
+    }, 0);
+    
+  };
+
+  
+    
+  /************* socket events ************/
+  // The server is asking us to enter an event code.
+  socket.on('please-identify', function (data) {
+    $scope.showLogin = true;
+    $scope.showLoading = false;
+    setTimeout(function() {
+      document.getElementById('eventCodeInput').focus();
+    }, 0);
+    
+  });
+  
+  // The server has accepted the event code and has sent us a token.
+  socket.on('identity-ok', function (data) {
+		// The server accepted our authentication
+		if(data.token) {
+     // LS.set('eventToken', data.token);
+		}
+    $scope.showLogin = false;
+    $scope.showLoading = false;
+		$scope.showEventDetails = true;
+	});
+  
+  socket.on('identity-fail', function (data) {
+		$scope.showEventCodeNotFound = true;
+	});
+  
+  // The server has sent us the entire data set.
+   socket.on('data-all', function (data) {
+    for(var key in data) {
+			if(data.hasOwnProperty(key)) {
+				for(var i=0; i<data[key].length; i++) {
+					var keyColumn = primaryKeys[key];
+					var keyValue = data[key][i][keyColumn];
+					$scope[key][keyValue] = data[key][i];
+				}
+			} 
+		}	
+    refactorData();
+	});
+  
+  // Used to identify the primary key in each table
+	var primaryKeys = {
+		events: "eventId",
+		categories: "CategoryId",
+		cars: "carId",
+		runs: "RunId",
+		results: "resultId"
+	};
+  
+  // The server has sent as an incremental update to the data set.
+  socket.on('data-upsert', function (data) {
+		for(var key in data) {
+      if(data.hasOwnProperty(key)) {
+        // Replace with the new data
+				for(var i=0; i<data[key].length; i++) {
+					var keyColumn = primaryKeys[key];
+					var keyValue = data[key][i][keyColumn];
+					$scope[key][keyValue] = data[key][i];
+				}
+			}
+		}
+    refactorData();
+	});
+	
+  // The server has removed a piece of data.
+	socket.on('data-delete', function (data) {
+		for(var key in data) {
+			if(data.hasOwnProperty(key)) {
+				// Delete each of the given data
+				for(var i=0; i<data[key].length; i++) {
+					var keyColumn = primaryKeys[key];
+					var keyValue = data[key][i][keyColumn];
+					delete $scope[key][keyValue];
+				}
+			}
+		}
+    refactorData();
+	});
+  
+  /*************** other helper functions ******************/
+  // Convert the relational data to a form that is easier to display
+  var refactorData = function() {
+    $scope.boards = [];
+		
+		for(var i in $scope.categories) {
+      var CategoryId = $scope.categories[i].CategoryId;
+      var newCat = {};
+      newCat.Name = $scope.categories[i].Name; 
+      var newCars = [];
+      for(var j in $scope.cars) {
+        var carId = $scope.cars[j].carId;
+        if($scope.cars[j].CategoryId === CategoryId) {
+          var newCar = {};
+          newCar.Name = $scope.cars[j].Name;
+          
+          // Now search for the times
+          newCar.Times = ['','','',''];
+          newCar.BestTime = 1000000000;
+          for(var resultId in $scope.results) {
+            if($scope.results.hasOwnProperty(resultId)) {
+              if($scope.results[resultId].carId === carId) {
+                var lane = $scope.results[resultId].lane;
+                var time = $scope.results[resultId].time;
+                if(newCar.Times[lane] !== '')
+                  newCar.Times[lane] += "/";
+                if(time)  {
+                  newCar.Times[lane] += time.toFixed(3);
+                  newCar.BestTime = Math.min(newCar.BestTime, time).toFixed(3);
+                }
+              }
+            }
+          }
+          newCars.push(newCar);
+        }
+      }
+      
+      newCars.sort(function(a, b) {
+        return a.BestTime - b.BestTime;
+      });
+      
+      newCat.cars = newCars;
+      $scope.boards.push(newCat);
+		}
+  };
+  
+  // Final setup
+  angular.element(document).ready(function () {
+   // socket.emit('greetings', {token: LS.get('eventToken')});
+    $timeout(function() {
+      $scope.showServerNotResponding = true;
+    }, 3000);
+  });
+  
+});

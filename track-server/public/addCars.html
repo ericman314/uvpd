@@ -1,0 +1,87 @@
+<div class="modal-header">
+  <h3 class="modal-title">{{options.heading}}</h3>
+</div>
+
+<form name="newCar" novalidate>
+  
+<div class="modal-body" style="max-height:50%; overflow-y: auto;" ng-keydown="handleKeydown($event)">
+
+  <fieldset class="form-group" ng-class="{ 'has-error' : newCar.carName.$invalid && newCar.carName.$touched}">
+    <label for=carName>Name</label>
+    <input type="text" class="form-control" id="carName" name="carName" ng-model='model.carName' required autofocus>
+  </fieldset>
+  
+  <fieldset class="form-group" ng-class="{ 'has-error' : newCar.nickname.$invalid && newCar.nickname.$touched}">
+    <label for=nickname>Car's Name</label>
+    <input type="text" class="form-control" id="nickname" name="nickname" ng-model='model.nickname'>
+  </fieldset>
+  
+  <fieldset class="form-group" ng-class="{ 'has-error' : newCar.den.$invalid && newCar.den.$touched}">
+    <label for=den>Den</label>
+    <input type="text" class="form-control" id="den" name="den" ng-model='model.den'>
+  </fieldset>
+
+  <fieldset class="form-group">
+    <label>Status</label>
+    <div class="btn-group">
+      <label class="btn btn-info" name="deferPerm" ng-model='model.deferPerm' uib-btn-radio="0" >Active</label>
+      <label class="btn btn-info" name="deferPerm" ng-model='model.deferPerm' uib-btn-radio="1"  >Inactive</label>
+    </div>  
+  </fieldset>  
+
+<!--   
+  <fieldset class="form-group" ng-class="{ 'has-error' : newCar.weight.$invalid && newCar.weight.$touched}">
+    <label for=weight>weight (oz)</label>
+    <input type="text" class="form-control" id="weight" name="weight" ng-model='model.weight'>
+    <p ng-show="newCar.weight.$invalid && newCar.weight.$touched" class="help-block">Enter a number.</p>
+  </fieldset>
+  
+  <fieldset class="form-group" ng-class="{ 'has-error' : newCar.com.$invalid && newCar.com.$touched}">
+    <label for=com>Center of mass (inches from front)</label>
+    <input type="text" class="form-control" id="com" name="com" ng-model='model.com'>
+    <p ng-show="newCar.com.$invalid && newCar.com.$touched" class="help-block">Enter a number.</p>
+  </fieldset> -->
+  
+  <div class="row">
+  <div class="camera col-sm-6" video-stream>
+    <video style="width:100%;">Video stream not available.</video>
+    <canvas style="display:none;"></canvas>
+  </div>
+  
+  <div class="col-sm-6">
+    <img id='carImage' ng-src="{{view.imgsrc}}" on-load="onImgLoad($event)" crossorigin="anonymous">  
+  </div>
+  </div>
+
+<!--   
+  <div class="row bigbig">
+  
+    
+    weight
+    <b ng-class="{overweight:weight.oz>5.0}">{{weight.oz}} oz</b><br>
+
+    Center of mass
+    <b>{{weight.com}}"</b><br>
+  
+  </div> -->
+  
+   
+</div>
+<input type=button name=rotate class="btn" ng-click="rotatePicture(90)" value="Rotate 90 CW" style="float:right;" />  
+<input type=button name=rotate class="btn" ng-click="rotatePicture(180)" value="Rotate 180" style="float:right;" />  
+<input type=button name=rotate class="btn" ng-click="rotatePicture(-90)" value="Rotate 90 CCW" style="float:right;" />  
+
+<div class="modal-footer" style="clear:both;">
+  <!--<span ng-show="selected.item">Selected: <b>{{selected.items}}</b>&nbsp;&nbsp;</span>-->
+  <!--<button class="btn btn-primary" type="button" ng-click="ok()" ng-disabled="selected.items.length === 0">OK</button>-->
+  
+  <!-- <input type=button name=takepic class="btn" ng-click="tare()" value="Tare" ng-disabled="!weight.oz"> -->
+  <!-- <input type=button name=takepic class="btn" ng-click="recordWeight()" value="Record weight" ng-disabled="!weight.oz"> -->
+  
+  <input type=button name=addfromobile class="btn" ng-click="addFromMobileCheckin()" value="Add from mobile checkin...">
+  <input type=button name=takepic class="btn" ng-click="takePicture()" value="Take Picture (Ctrl+P)">
+  <input type=submit name=submit class="btn btn-primary" ng-click="add()" ng-disabled="newCar.$invalid || !view.imgsrc" ng-value='options.okButton'>
+
+  <input type=button class="btn" ng-click="close()" value="Close">
+</div>
+</form>

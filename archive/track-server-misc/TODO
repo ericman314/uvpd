@@ -1,0 +1,8 @@
+Delete result or car, no way to delete item in remote database without replicating entire database
+download results offline from race manager
+Cannot remove den (and for that matter, probably cannot remove nickname either)
+If race is ended, then press "back" on browser, then start race, then release gate, race will immediately finish. Standings from last race are never removed, so the Event controller thinks that the race is finished. Need to reset that variable, maybe when "Race start" is pressed?
+Photo finish is being awarded for cars that don't finish
+
+DONE Auto refresh results page
+DONE history pushState on results page
