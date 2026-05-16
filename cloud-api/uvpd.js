@@ -13,6 +13,8 @@ var fileUpload = require('express-fileupload')
 var uuid = require('uuid/v1')
 var moment = require('moment')
 
+var dataDir = config.dataDir || __dirname
+
 var conn = mysql.createPool({
   connectionLimit: 10,
   host: config.dbHost,
@@ -162,7 +164,7 @@ app.post('/api/v3/checkin', function (req, res) {
     // Save file
     let preamble = 'data:image/jpeg;base64,'
     if (req.body.photo.startsWith(preamble)) {
-      let outfile = __dirname + '/checkin/' + checkInId + '.jpg'
+      let outfile = dataDir + '/checkin/' + checkInId + '.jpg'
       let imgData = req.body.photo.substr(preamble.length)
       fs.writeFile(outfile, imgData, { encoding: 'base64' }, err => {
         if (err) {
@@ -297,7 +299,7 @@ app.post('/api/v3/carImage', function (req, res) {
     // Validate req.body.Id if you value your life
     if (/[0-9]{1,9}/.test(req.body.Id)) {
 
-      var filename = __dirname + "/cars/" + req.body.Id + ".jpg"
+      var filename = dataDir + "/cars/" + req.body.Id + ".jpg"
       if (req.body.imageData) {
         console.log("Writing " + filename)
         const imageData = req.body.imageData.replace('data:image/jpeg;base64,', '')
@@ -406,14 +408,14 @@ app.use('/api/v3/video', express.static('videos'))
 
 app.get('/api/v3/cars/:id.jpg', function (req, res) {
   if (/[0-9]{1,9}/.test(req.params.id)) {
-    var filename = __dirname + "/cars/" + req.params.id + ".jpg"
+    var filename = dataDir + "/cars/" + req.params.id + ".jpg"
     res.sendFile(filename)
   }
 })
 
 app.get('/api/v3/checkin/:id.jpg', function (req, res) {
   if (/[0-9a-f\-]{36}/.test(req.params.id)) {
-    var filename = __dirname + "/checkin/" + req.params.id + ".jpg"
+    var filename = dataDir + "/checkin/" + req.params.id + ".jpg"
     res.sendFile(filename)
   }
 })

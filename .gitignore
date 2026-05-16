@@ -17,6 +17,7 @@ track-server/videos/
 
 # Local working area; not part of the repo
 _inventory/
+MIGRATION.md
 
 # OS / editor noise
 .DS_Store
