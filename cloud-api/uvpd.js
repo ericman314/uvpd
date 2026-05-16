@@ -370,7 +370,7 @@ app.get('/api/v3/carDetails/', function (req, res) {
           car.results = rows
 
           // Find list of available replay videos
-          fs.readdir('videos', (err, files) => {
+          fs.readdir(dataDir + '/videos', (err, files) => {
             if (err) {
               return res.json({ err })
             }
@@ -403,7 +403,7 @@ app.get('/api/v3/carDetails/', function (req, res) {
   }
 })
 
-app.use('/api/v3/video', express.static('videos'))
+app.use('/api/v3/video', express.static(dataDir + '/videos'))
 
 
 app.get('/api/v3/cars/:id.jpg', function (req, res) {
