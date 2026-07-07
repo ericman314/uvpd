@@ -1,0 +1,131 @@
+/* Header band — ported from the Angular app's .header / .subtitle: centered
+   logo over the textured background image, subtitle below in muted tan. */
+.app-header {
+  padding: 18px 0 12px;
+  text-align: center;
+  background-image: url('/background-header.jpg');
+  font-size: 12pt;
+}
+
+.app-header img {
+  max-width: 100%;
+}
+
+.app-header .subtitle {
+  margin-top: 0.7em;
+  color: #cba;
+}
+
+.app-main {
+  margin: 10px;
+}
+
+.modal {
+  border: none;
+  border-radius: 6px;
+  padding: 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  background: #fff;
+}
+
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  width: 500px;
+  max-width: 90vw;
+}
+
+.modal-content h2 {
+  margin: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.modal-content fieldset {
+  border: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 4px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 16px;
+}
+
+/* form-control: full-width inputs matching the Angular app's Bootstrap look. */
+.form-control {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+}
+
+/* Native date input shows its mm/dd/yyyy format via datetime-edit pseudo-
+   elements, not ::placeholder. When empty (an empty required date is :invalid),
+   lighten that text so it reads as a placeholder. */
+input[type='date']:invalid::-webkit-datetime-edit {
+  color: #999;
+}
+
+/* Small muted helper text under a field (Angular's .help-block). */
+.help-block {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: #737373;
+}
+
+/* Buttons — ported from the Angular app's main.css. Primary is rust with cream
+   text (hover brightens); the plain default is a light gray. */
+button {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 15.4px;
+  font-weight: 400;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #333;
+  cursor: pointer;
+  line-height: 22px;
+}
+
+button:hover:not(:disabled) {
+  background: #e6e6e6;
+}
+
+button.btn-primary {
+  background: #ad431f;
+  color: #fff7f0;
+  font-weight: 300;
+  border: none;
+}
+
+button.btn-primary:hover:not(:disabled) {
+  background: #e05520;
+  color: #fff;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

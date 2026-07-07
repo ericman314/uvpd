@@ -1,0 +1,51 @@
+/* Base styles ported from the Angular app's main.css to keep the familiar
+   look for race-day operators: cream background, Lato body / Exo 2 headings,
+   rust-colored links. Forced light theme (the original had no dark mode). */
+:root {
+  color-scheme: light;
+}
+
+body,
+html {
+  padding: 0;
+  margin: 0;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  background: #f7f0e0;
+  color: #222;
+  line-height: 1.42857;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-size: 36px;
+}
+
+p {
+  font-size: 14pt;
+  margin: 0;
+  margin-bottom: 10px;
+}
+
+a,
+a:focus {
+  color: #a50;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #c70;
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+}
