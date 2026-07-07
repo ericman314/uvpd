@@ -9,7 +9,8 @@ var server = require('http').Server(app)
 var io = require('socket.io')(server)
 var { exec } = require('child_process')
 const moment = require('moment')
-var SerialPort = require('serialport')
+var { SerialPort } = require('serialport')
+var { ReadlineParser } = require('@serialport/parser-readline')
 
 /** Create a pool of connections to the MySQL database */
 var pool = mysql.createPool({
@@ -648,7 +649,7 @@ setInterval(function () {
       if (usbPorts.length > 0) {
 
         console.log("Available ports: " + usbPorts.join(", ") + ". Trying to connect to " + usbPorts[0])
-        port = new SerialPort(usbPorts[0], { baudRate: 115200 }, function (err) {
+        port = new SerialPort({ path: usbPorts[0], baudRate: 115200 }, function (err) {
           if (err) {
             console.log(err)
             socket.emit("serialState", { connected: false, err: err })
@@ -680,7 +681,7 @@ setInterval(function () {
           port = null
         })
 
-        parser = port.pipe(new SerialPort.parsers.Readline)
+        parser = port.pipe(new ReadlineParser())
 
         parser.on('data', function (data) {
           handleSerialData(data.toString().trim())
