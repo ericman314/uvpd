@@ -5,12 +5,14 @@ type PropType = {
   open: boolean
   onClose: () => void
   children: React.ReactNode
+  // Extra class on the <dialog> for size/variant modifiers (e.g. 'wide').
+  className?: string
 }
 
 // Reusable modal built on the native <dialog> element: free backdrop,
 // Esc-to-close, and focus trapping. `open` drives showModal()/close(); closing
 // by any means (Esc, backdrop click, close button) calls onClose.
-export function Modal({ open, onClose, children }: PropType) {
+export function Modal({ open, onClose, children, className }: PropType) {
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -30,7 +32,12 @@ export function Modal({ open, onClose, children }: PropType) {
   }
 
   return (
-    <dialog ref={ref} className="modal" onClose={onClose} onClick={onClick}>
+    <dialog
+      ref={ref}
+      className={className ? `modal ${className}` : 'modal'}
+      onClose={onClose}
+      onClick={onClick}
+    >
       <div className="modal-content">{children}</div>
     </dialog>
   )

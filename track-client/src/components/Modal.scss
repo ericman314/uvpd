@@ -10,6 +10,10 @@
     background: rgba(0, 0, 0, 0.4);
   }
 
+  &.wide .modal-content {
+    width: 800px;
+  }
+
   .modal-content {
     width: 500px;
     max-width: 90vw;
@@ -31,6 +35,29 @@
       margin-bottom: 4px;
       font-family: 'Exo 2', sans-serif;
       font-size: 16px;
+    }
+
+    /* Segmented toggle (e.g. Active/Inactive) — buttons sit flush. */
+    .btn-group {
+      display: inline-flex;
+
+      button {
+        border-radius: 0;
+
+        &:first-child {
+          border-top-left-radius: 4px;
+          border-bottom-left-radius: 4px;
+        }
+
+        &:last-child {
+          border-top-right-radius: 4px;
+          border-bottom-right-radius: 4px;
+        }
+
+        &:not(:first-child) {
+          margin-left: -1px;
+        }
+      }
     }
   }
 

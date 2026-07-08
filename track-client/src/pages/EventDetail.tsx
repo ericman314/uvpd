@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { DateTime } from 'luxon'
 import { apiGet, apiPost } from '../api/client'
@@ -6,6 +6,8 @@ import type { Car, Event, Result } from '../api/types'
 import { SerialIndicator } from '../components/SerialIndicator'
 import { Dropdown } from '../components/Dropdown'
 import { ResultsList } from '../components/ResultsList'
+import { Modal } from '../components/Modal'
+import { CarForm } from './CarForm'
 import { useConfirm } from '../hooks/useConfirm'
 import { resultsSorter } from '../utils/helpers'
 import './EventDetail.scss'
@@ -21,29 +23,32 @@ export function EventDetail() {
   const [cars, setCars] = useState<CarWithAchievements[]>([])
   const [results, setResults] = useState<Result[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [showAddCar, setShowAddCar] = useState(false)
   const { showConfirm, confirmContent } = useConfirm()
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await apiGet<{
-          event: Event
-          cars: Car[]
-          results: Result[]
-        }>(`/api/eventCarsResults?eventId=${eventId}`)
-        setEvent(data.event)
-        setCars(
-          data.cars.map((c) => ({
-            ...c,
-            achievementList: c.achievements ? c.achievements.split(',') : [],
-          })),
-        )
-        setResults([...data.results].sort(resultsSorter))
-      } catch (e: unknown) {
-        setError(String(e))
-      }
-    })()
+  const loadEventCarsResults = useCallback(async () => {
+    try {
+      const data = await apiGet<{
+        event: Event
+        cars: Car[]
+        results: Result[]
+      }>(`/api/eventCarsResults?eventId=${eventId}`)
+      setEvent(data.event)
+      setCars(
+        data.cars.map((c) => ({
+          ...c,
+          achievementList: c.achievements ? c.achievements.split(',') : [],
+        })),
+      )
+      setResults([...data.results].sort(resultsSorter))
+    } catch (e: unknown) {
+      setError(String(e))
+    }
   }, [eventId])
+
+  useEffect(() => {
+    loadEventCarsResults()
+  }, [loadEventCarsResults])
 
   // Cars keyed by id, so a result can name its car (EventCtrl.getCarFromResult).
   const carsById = useMemo(() => {
@@ -162,6 +167,15 @@ export function EventDetail() {
       </div>
 
       <h2>Cars ({cars.length})</h2>
+      <p>
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => setShowAddCar(true)}
+        >
+          Add car
+        </button>
+      </p>
       {duplicateName && (
         <p style={{ color: 'red', fontWeight: 'bold' }}>
           Duplicate name: {duplicateName}
@@ -188,6 +202,17 @@ export function EventDetail() {
         carName={(result) => carsById.get(result.carId)?.carName}
         onDelete={deleteResult}
       />
+
+      <Modal open={showAddCar} onClose={() => setShowAddCar(false)} className="wide">
+        <CarForm
+          eventId={event.eventId}
+          onClose={() => setShowAddCar(false)}
+          onSaved={() => {
+            setShowAddCar(false)
+            loadEventCarsResults()
+          }}
+        />
+      </Modal>
 
       {confirmContent}
     </div>

@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiGet, apiPost } from '../api/client'
 import type { Car, Result } from '../api/types'
 import { useConfirm } from '../hooks/useConfirm'
 import { ResultsList } from '../components/ResultsList'
+import { Modal } from '../components/Modal'
+import { CarForm } from './CarForm'
 import { resultsSorter } from '../utils/helpers'
 import './CarDetail.scss'
 
@@ -14,25 +16,27 @@ export function CarDetail() {
   const [car, setCar] = useState<Car | null>(null)
   const [results, setResults] = useState<Result[]>([])
   const [error, setError] = useState<string | null>(null)
-  // Cache-buster so the photo isn't a stale cached copy (CarCtrl used
-  // ?v=Date.now()). Computed once per mount; will become state when the Edit
-  // flow can update the photo in place.
-  const [imageVersion] = useState(() => Date.now())
+  const [showEdit, setShowEdit] = useState(false)
+  // Cache-buster for the photo (CarCtrl used ?v=Date.now()). Bumped after an
+  // edit so a re-shot photo isn't served from cache.
+  const [imageVersion, setImageVersion] = useState(() => Date.now())
   const { showConfirm, confirmContent } = useConfirm()
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await apiGet<{ car: Car; results: Result[] }>(
-          `/api/car?carId=${carId}`,
-        )
-        setCar(data.car)
-        setResults([...data.results].sort(resultsSorter))
-      } catch (e: unknown) {
-        setError(String(e))
-      }
-    })()
+  const loadCar = useCallback(async () => {
+    try {
+      const data = await apiGet<{ car: Car; results: Result[] }>(
+        `/api/car?carId=${carId}`,
+      )
+      setCar(data.car)
+      setResults([...data.results].sort(resultsSorter))
+    } catch (e: unknown) {
+      setError(String(e))
+    }
   }, [carId])
+
+  useEffect(() => {
+    loadCar()
+  }, [loadCar])
 
   const achievements = useMemo(
     () => (car?.achievements ? car.achievements.split(',') : []),
@@ -83,9 +87,12 @@ export function CarDetail() {
 
       <h1>{car.carName}</h1>
 
-      {/* Edit car (AddCars form modal) not ported yet. */}
       <p>
-        <button type="button" className="link-button" disabled>
+        <button
+          type="button"
+          className="link-button"
+          onClick={() => setShowEdit(true)}
+        >
           Edit car
         </button>
       </p>
@@ -108,6 +115,18 @@ export function CarDetail() {
         carName={() => car.carName}
         onDelete={deleteResult}
       />
+
+      <Modal open={showEdit} onClose={() => setShowEdit(false)} className="wide">
+        <CarForm
+          car={car}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => {
+            setShowEdit(false)
+            setImageVersion(Date.now())
+            loadCar()
+          }}
+        />
+      </Modal>
 
       {confirmContent}
     </div>

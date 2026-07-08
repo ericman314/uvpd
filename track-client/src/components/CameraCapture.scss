@@ -1,0 +1,39 @@
+/* Webcam capture (components/CameraCapture.tsx). Scoped under .CameraCapture. */
+.CameraCapture {
+  .camera-error {
+    color: crimson;
+  }
+
+  .camera-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .camera-cell {
+    flex: 1;
+    min-width: 0;
+
+    video,
+    img {
+      width: 100%;
+      display: block;
+    }
+  }
+
+  .camera-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 180px;
+    background: #eee;
+    color: #999;
+  }
+
+  .camera-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+}
