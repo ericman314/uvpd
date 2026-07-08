@@ -31,7 +31,7 @@ export function EventsList() {
   const sorted = useMemo(() => [...events].sort((a, b) => b.eventDate.localeCompare(a.eventDate)), [events])
 
   return (
-    <div>
+    <div className="EventsList">
       <h1>Events</h1>
 
       <p>

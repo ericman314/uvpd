@@ -1,0 +1,149 @@
+/* Global, app-wide styles only. Page- and component-specific styles live in a
+   co-located CSS file scoped under a root class (e.g. .EventDetail, .Modal).
+   What stays here: app shell, base buttons, form primitives, shared vocab
+   (link buttons, lane colors, the result-time look shared by multiple pages). */
+
+/* Header band — ported from the Angular app's .header / .subtitle: centered
+   logo over the textured background image, subtitle below in muted tan. */
+.app-header {
+  padding: 18px 0 12px;
+  text-align: center;
+  background-image: url("/background-header.jpg");
+  font-size: 12pt;
+
+  img {
+    max-width: 100%;
+  }
+
+  .subtitle {
+    margin-top: 0.7em;
+    color: #cba;
+  }
+}
+
+.app-main {
+  margin: 10px;
+}
+
+/* Buttons — ported from the Angular app's main.css. Primary is rust with cream
+   text (hover brightens); the plain default is a light gray. */
+button {
+  font-family: "Exo 2", sans-serif;
+  font-size: 15.4px;
+  font-weight: 400;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #333;
+  cursor: pointer;
+  line-height: 22px;
+
+  &:hover:not(:disabled) {
+    background: #e6e6e6;
+  }
+
+  &.btn-primary {
+    background: #ad431f;
+    color: #fff7f0;
+    font-weight: 300;
+    border: none;
+  }
+
+  &.btn-primary:hover:not(:disabled) {
+    background: #e05520;
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+/* A button that looks like a link — used for actions the Angular app rendered
+   as <a ng-click> (Back, Edit car, Delete car). */
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: #a50;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: #c70;
+    text-decoration: underline;
+    background: none;
+  }
+
+  &:disabled {
+    color: #999;
+    cursor: default;
+  }
+}
+
+/* form-control: full-width inputs matching the Angular app's Bootstrap look. */
+.form-control {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-family: "Exo 2", sans-serif;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+}
+
+/* Native date input shows its mm/dd/yyyy format via datetime-edit pseudo-
+   elements, not ::placeholder. When empty (an empty required date is :invalid),
+   lighten that text so it reads as a placeholder. */
+input[type="date"]:invalid::-webkit-datetime-edit {
+  color: #999;
+}
+
+/* Small muted helper text under a field (Angular's .help-block). */
+.help-block {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: #737373;
+}
+
+/* Result time — shared by the event detail page and the race page: italic,
+   20pt, with a characteristic black outline (from main.css) so light lane
+   colors (e.g. yellow) stay legible. Layout differs per page and is scoped
+   there; this is the shared visual identity. */
+.result-time {
+  font-size: 20pt;
+  font-style: italic;
+  font-weight: 600;
+  text-shadow:
+    1px 0px 0px black,
+    -1px 0px 0px black,
+    0px 1px 0px black,
+    0px -1px 0px black,
+    1px 1px 0px black,
+    1px -1px 0px black,
+    -1px 1px 0px black,
+    -1px -1px 0px black,
+    2px 0px 0px black,
+    -2px 0px 0px black,
+    0px 2px 0px black,
+    0px -2px 0px black,
+    2px 2px 1px black;
+}
+
+/* Lane colors from main.css — shared vocabulary across results and race views. */
+.lane-color-1 {
+  color: #90caf9;
+}
+.lane-color-2 {
+  color: #ffeb3b;
+}
+.lane-color-3 {
+  color: #8bc34a;
+}
+.lane-color-4 {
+  color: #e57373;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import './Modal.scss'
 
 type PropType = {
   open: boolean

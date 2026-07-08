@@ -1,0 +1,36 @@
+/* Shared results list (components/ResultsList.tsx). Scoped under .ResultsList. */
+.ResultsList {
+  clear: both;
+  /* Only as wide as its content, not the full page. */
+  width: fit-content;
+
+  ul {
+    padding: 0;
+    font-size: 16pt;
+    list-style: none;
+  }
+
+  .result-item {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    border-top: solid gray 1px;
+    padding: 4px 0;
+  }
+
+  /* Push the time (and the delete button after it) to the right edge of the
+     content-width row. */
+  .result-time {
+    margin-left: auto;
+  }
+
+  .result-delete {
+    border: none;
+    background: none;
+    color: #a00;
+    font-size: 18pt;
+    line-height: 1;
+    padding: 0 8px;
+    cursor: pointer;
+  }
+}

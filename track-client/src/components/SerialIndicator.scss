@@ -1,0 +1,16 @@
+/* SerialIndicator (components/SerialIndicator.tsx) — stub. Scoped under
+   .pin-state-indicator. */
+.pin-state-indicator {
+  float: right;
+  font-weight: bold;
+  font-size: 16pt;
+  padding: 4px 8px;
+  background: black;
+  border-radius: 4px;
+
+  .serial-status {
+    color: #ccc;
+    font-size: 12pt;
+    margin-right: 8px;
+  }
+}

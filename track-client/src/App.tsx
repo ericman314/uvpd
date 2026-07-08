@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import { EventsList } from './pages/EventsList'
+import { EventDetail } from './pages/EventDetail'
+import { CarDetail } from './pages/CarDetail'
 import { Stub } from './pages/Stub'
-import './App.css'
+import './App.scss'
 
 // App shell + routing. Routes mirror the Angular appStates.js so URLs match the
 // old app one-to-one; pages not yet ported render a Stub placeholder.
@@ -19,8 +21,8 @@ export function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/events-list" replace />} />
           <Route path="/events-list" element={<EventsList />} />
-          <Route path="/events/:eventId" element={<Stub name="Event / Race" />} />
-          <Route path="/cars/:carId" element={<Stub name="Car Detail" />} />
+          <Route path="/events/:eventId" element={<EventDetail />} />
+          <Route path="/car/:carId" element={<CarDetail />} />
           <Route path="/calibrate" element={<Stub name="Calibrate Scale" />} />
           <Route path="*" element={<Navigate to="/events-list" replace />} />
         </Routes>
