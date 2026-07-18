@@ -33,11 +33,17 @@ export function Modal({ open, onClose, children, className }: PropType) {
     if (e.target === ref.current) onClose()
   }
 
+  // The native `close` event bubbles, so a nested child modal closing would
+  // otherwise also fire this (parent) onClose. Only react to our own dialog's.
+  function onCloseEvent(e: React.SyntheticEvent<HTMLDialogElement>) {
+    if (e.target === ref.current) onClose()
+  }
+
   return (
     <dialog
       ref={ref}
       className={className ? `modal ${className}` : 'modal'}
-      onClose={onClose}
+      onClose={onCloseEvent}
       onClick={onClick}
     >
       <div className="modal-content">{open && children}</div>

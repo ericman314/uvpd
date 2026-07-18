@@ -69,6 +69,18 @@ export function CameraCapture({ onCapture, image }: PropType) {
     onCapture(canvas.toDataURL('image/jpeg'))
   }
 
+  // Ctrl+P takes a picture (matches the Angular AddCarsCtrl shortcut).
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.ctrlKey && e.code === 'KeyP') {
+        e.preventDefault()
+        takePicture()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onCapture])
+
   function rotate(angle: number) {
     if (!image) return
     const img = new Image()
@@ -119,7 +131,7 @@ export function CameraCapture({ onCapture, image }: PropType) {
 
       <div className="camera-controls">
         <button type="button" onClick={takePicture}>
-          Take Picture
+          Take Picture (Ctrl+P)
         </button>
         <button type="button" onClick={() => rotate(-90)} disabled={!image}>
           Rotate 90 CCW

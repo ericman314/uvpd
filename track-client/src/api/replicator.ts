@@ -1,53 +1,15 @@
 import { apiGet } from './client'
+import { getPublicSiteUrl, cloudPost } from './cloud'
 
 // Replicates local track-server data up to the public cloud site — the React
 // equivalent of the Angular dbReplicator service. It's a plain module singleton
-// (not a hook): the debounce queue and cached publicSiteUrl are app-global.
+// (not a hook): the debounce queue is app-global. Shared cloud plumbing
+// (publicSiteUrl, secret, cloudPost) lives in ./cloud.
 //
 // Flow: GET /mysqldump (local) returns { output, secret }; POST that to
-// {publicSiteUrl}/api/v3/mysqldump. Car photos go to /api/v3/carImage. The
-// cloud endpoints are a different origin than the local server, so they're
-// fetched against publicSiteUrl directly rather than the API_BASE seam.
+// {publicSiteUrl}/api/v3/mysqldump. Car photos go to /api/v3/carImage.
 
 type MysqldumpResponse = { output: string; secret: string; err?: unknown }
-
-// publicSiteUrl comes from the local server; cache the in-flight promise so
-// concurrent callers share one fetch.
-let publicSiteUrlPromise: Promise<string> | null = null
-function getPublicSiteUrl(): Promise<string> {
-  if (!publicSiteUrlPromise) {
-    publicSiteUrlPromise = apiGet<{ url: string }>('/publicSiteUrl').then(
-      (r) => r.url,
-    )
-  }
-  return publicSiteUrlPromise
-}
-
-// The shared secret gating the cloud endpoints; fetched once from the local
-// server and cached.
-let secretPromise: Promise<string> | null = null
-function getSecret(): Promise<string> {
-  if (!secretPromise) {
-    secretPromise = apiGet<{ secret: string }>('/api/apiSecret').then(
-      (r) => r.secret,
-    )
-  }
-  return secretPromise
-}
-
-// POST a JSON body to a cloud (publicSiteUrl) endpoint, injecting the secret.
-async function cloudPost(path: string, body: Record<string, unknown>): Promise<void> {
-  const [publicSiteUrl, secret] = await Promise.all([
-    getPublicSiteUrl(),
-    getSecret(),
-  ])
-  const res = await fetch(`${publicSiteUrl}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...body, secret }),
-  })
-  if (!res.ok) throw new Error(`cloud ${path} failed: ${res.status}`)
-}
 
 // Debounced queue of eventIds to replicate. undefined = whole DB.
 let queue: (number | undefined)[] = []

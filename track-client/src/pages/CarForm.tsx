@@ -1,8 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { apiPost } from '../api/client'
 import { replicate, sendImage } from '../api/replicator'
-import type { Car } from '../api/types'
+import { checkinImageAsDataUrl, markCheckinAdded } from '../api/checkin'
+import type { Car, Checkin } from '../api/types'
 import { CameraCapture } from '../components/CameraCapture'
+import { CheckinPicker } from '../components/CheckinPicker'
+import { Modal } from '../components/Modal'
 
 type PropType = {
   // Add mode: pass eventId, omit car. Edit mode: pass the existing car.
@@ -15,8 +18,9 @@ type PropType = {
 
 // Ported from the Angular AddCarsCtrl + addCars.html, covering both the add and
 // edit paths (the Angular controller served both via its `options.model`).
-// Fields: name/nickname/den/status + webcam photo. Add -> /api/newCarSave,
-// edit -> /api/carUpdate. Scale weight and "add from mobile checkin" deferred.
+// Fields: name/nickname/den/status + webcam photo, plus "add from mobile
+// check-in" (add mode). Add -> /api/newCarSave, edit -> /api/carUpdate. Scale
+// weight is still deferred.
 export function CarForm({ eventId, car, onClose, onSaved }: PropType) {
   const isEdit = !!car
 
@@ -32,6 +36,39 @@ export function CarForm({ eventId, car, onClose, onSaved }: PropType) {
   )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPicker, setShowPicker] = useState(false)
+  // Set when the car was picked from mobile check-in; on save we tell the cloud
+  // it's been added so it drops off the unadded list.
+  const [checkInId, setCheckInId] = useState<string | null>(null)
+
+  async function handlePick(checkin: Checkin) {
+    setShowPicker(false)
+    setCarName(checkin.carName)
+    setNickname(checkin.nickname ?? '')
+    setDen(checkin.den ?? '')
+    setDeferPerm(0)
+    setCheckInId(checkin.checkInId)
+    try {
+      // Pull the checkin photo in as real image data so it saves with the car.
+      setImage(await checkinImageAsDataUrl(checkin.checkInId))
+    } catch (e: unknown) {
+      setError(String(e))
+    }
+  }
+
+  // Ctrl+M opens the mobile check-in picker (add mode only), matching the
+  // Angular AddCarsCtrl shortcut.
+  useEffect(() => {
+    if (isEdit) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.ctrlKey && e.code === 'KeyM') {
+        e.preventDefault()
+        setShowPicker(true)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isEdit])
 
   // Add mode requires a picture (matches original); edit already has one.
   const valid = useMemo(
@@ -77,6 +114,10 @@ export function CarForm({ eventId, car, onClose, onSaved }: PropType) {
 
       replicate(savedEventId)
       if (newImageData) await sendImage(savedCarId, newImageData, secret)
+      // If this car came from mobile check-in, mark it added on the cloud.
+      if (checkInId && savedEventId !== undefined) {
+        await markCheckinAdded(checkInId, savedEventId)
+      }
       onSaved(savedCarId)
     } catch (e: unknown) {
       setError(String(e))
@@ -121,7 +162,7 @@ export function CarForm({ eventId, car, onClose, onSaved }: PropType) {
         </fieldset>
 
         <fieldset>
-          <label htmlFor="den">Den</label>
+          <label htmlFor="den">Group</label>
           <input
             id="den"
             className="form-control"
@@ -157,6 +198,11 @@ export function CarForm({ eventId, car, onClose, onSaved }: PropType) {
           <button type="button" onClick={onClose}>
             Cancel
           </button>
+          {!isEdit && (
+            <button type="button" onClick={() => setShowPicker(true)}>
+              Add from mobile check-in… (Ctrl+M)
+            </button>
+          )}
           <button
             type="submit"
             className="btn-primary"
@@ -172,6 +218,20 @@ export function CarForm({ eventId, car, onClose, onSaved }: PropType) {
           </button>
         </div>
       </div>
+
+      {!isEdit && eventId !== undefined && (
+        <Modal
+          open={showPicker}
+          onClose={() => setShowPicker(false)}
+          className="wide"
+        >
+          <CheckinPicker
+            eventId={eventId}
+            onPick={handlePick}
+            onClose={() => setShowPicker(false)}
+          />
+        </Modal>
+      )}
     </form>
   )
 }

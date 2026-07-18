@@ -45,3 +45,14 @@ export type EventCarsResults = {
   cars: Car[]
   results: Result[]
 }
+
+// A car pre-registered via online mobile check-in (cloud CheckIn table).
+export type Checkin = {
+  checkInId: string
+  carName: string
+  nickname?: string | null
+  den?: string | null
+  time: string
+  checkInEventId?: number | null
+  addedToEventId?: number | null
+}
