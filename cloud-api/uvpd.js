@@ -28,11 +28,11 @@ app.use(morgan('combined'))
 app.use(fileUpload({ safeFileNames: true, preserveExtension: 4, limits: { fileSize: 15 * 1024 * 1024 } }))
 
 app.use(bodyParser.json({       // to support JSON-encoded bodies
-  limit: '10mb'
+  limit: '20mb'
 }))
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true,
-  limit: '10mb'
+  limit: '20mb'
 }))
 
 app.use(function (req, res, next) {
