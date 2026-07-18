@@ -1,7 +1,6 @@
 var fs = require('fs')
 var express = require('express')
 var config = require('./config')
-var bodyParser = require('body-parser')
 var util = require('util')
 var app = express()
 var server = require('http').Server(app)
@@ -27,13 +26,8 @@ app.use(morgan('combined'))
 
 app.use(fileUpload({ safeFileNames: true, preserveExtension: 4, limits: { fileSize: 15 * 1024 * 1024 } }))
 
-app.use(bodyParser.json({       // to support JSON-encoded bodies
-  limit: '20mb'
-}))
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true,
-  limit: '20mb'
-}))
+app.use(express.json({ limit: '20mb' }))
+app.use(express.urlencoded({ extended: true, limit: '20mb' }))
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*")
@@ -69,11 +63,11 @@ app.get('/api/v3/events', function (req, res) {
   var where = 'WHERE hidden = 0'
   var params = []
   // Compare against Utah-local date (server is UTC). -06:00 is MDT.
-  if (req.query.hasOwnProperty('dayStart')) {
+  if (Object.hasOwn(req.query, 'dayStart')) {
     where += " AND DATEDIFF(eventDate, CONVERT_TZ(NOW(), '+00:00', '-06:00')) >= ? "
     params.push(req.query.dayStart)
   }
-  if (req.query.hasOwnProperty('dayEnd')) {
+  if (Object.hasOwn(req.query, 'dayEnd')) {
     where += " AND DATEDIFF(eventDate, CONVERT_TZ(NOW(), '+00:00', '-06:00')) < ? "
     params.push(req.query.dayEnd)
   }
@@ -336,7 +330,7 @@ app.post('/api/v3/carImage', function (req, res) {
 
   }
   else {
-    res.status('403')
+    res.status(403).json({ err: 'Forbidden' })
     console.log("Forbidden")
   }
 
@@ -407,23 +401,42 @@ app.get('/api/v3/carDetails/', function (req, res) {
 app.use('/api/v3/video', express.static(dataDir + '/videos'))
 
 
-app.get('/api/v3/cars/:id.jpg', function (req, res) {
-  if (/[0-9]{1,9}/.test(req.params.id)) {
-    var filename = dataDir + "/cars/" + req.params.id + ".jpg"
-    res.sendFile(filename)
+function sendFile(res, path) {
+  return new Promise((resolve, reject) => {
+    res.sendFile(path, (err) => (err ? reject(err) : resolve()))
+  })
+}
+
+app.get('/api/v3/cars/:file', async (req, res) => {
+  const m = /^([0-9]{1,9})\.jpg$/.exec(req.params.file)
+  if (!m) return res.status(404).json({ err: 'Not found' })
+  try {
+    await sendFile(res, dataDir + "/cars/" + m[1] + ".jpg")
+  } catch {
+    if (!res.headersSent) res.status(404).json({ err: 'Not found' })
   }
 })
 
-app.get('/api/v3/checkin/:id.jpg', function (req, res) {
-  if (/[0-9a-f\-]{36}/.test(req.params.id)) {
-    var filename = dataDir + "/checkin/" + req.params.id + ".jpg"
-    res.sendFile(filename)
+app.get('/api/v3/checkin/:file', async (req, res) => {
+  const m = /^([0-9a-f-]{36})\.jpg$/.exec(req.params.file)
+  if (!m) return res.status(404).json({ err: 'Not found' })
+  try {
+    await sendFile(res, dataDir + "/checkin/" + m[1] + ".jpg")
+  } catch {
+    if (!res.headersSent) res.status(404).json({ err: 'Not found' })
   }
 })
 
 app.use(function (req, res, next) {
   res.status(404)
   res.send({ error: 'Not found' })
+})
+
+// Error handler — Express 5 forwards rejected async handlers here. Must be last
+// and take 4 args to be recognized as error middleware.
+app.use(function (err, req, res, next) {
+  console.log(err && err.toString ? err.toString() : err)
+  res.status(500).json({ err: String(err) })
 })
 
 io.on('connection', socket => {
