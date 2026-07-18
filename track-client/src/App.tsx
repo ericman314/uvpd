@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import { EventsList } from './pages/EventsList'
 import { EventDetail } from './pages/EventDetail'
 import { CarDetail } from './pages/CarDetail'
+import { Welcome } from './pages/Welcome'
 import { Stub } from './pages/Stub'
 import './App.scss'
 
@@ -22,6 +23,7 @@ export function App() {
           <Route path="/" element={<Navigate to="/events-list" replace />} />
           <Route path="/events-list" element={<EventsList />} />
           <Route path="/events/:eventId" element={<EventDetail />} />
+          <Route path="/events/:eventId/welcome" element={<Welcome />} />
           <Route path="/car/:carId" element={<CarDetail />} />
           <Route path="/calibrate" element={<Stub name="Calibrate Scale" />} />
           <Route path="*" element={<Navigate to="/events-list" replace />} />

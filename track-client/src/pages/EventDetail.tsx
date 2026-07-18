@@ -169,15 +169,16 @@ export function EventDetail() {
         </ul>
       </Dropdown>
 
-        {/* Race sub-screens not ported yet — inert placeholders. */}
+        {/* START RACE still inert (race machinery not ported). */}
         <button type="button" className="btn-primary" disabled>
           START RACE
         </button>
-        <button type="button" className="btn-primary" disabled>
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => navigate(`/events/${event.eventId}/welcome`)}
+        >
           Welcome screen
-        </button>
-        <button type="button" className="btn-primary" disabled>
-          Credits
         </button>
       </div>
 
