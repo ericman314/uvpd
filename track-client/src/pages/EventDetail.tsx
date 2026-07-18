@@ -2,12 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { DateTime } from 'luxon'
 import { apiGet, apiPost } from '../api/client'
+import {
+  replicateResultDelete,
+  replicateEventDelete,
+  replicateEventDeleteResults,
+} from '../api/replicator'
 import type { Car, Event, Result } from '../api/types'
 import { SerialIndicator } from '../components/SerialIndicator'
 import { Dropdown } from '../components/Dropdown'
 import { ResultsList } from '../components/ResultsList'
 import { Modal } from '../components/Modal'
 import { CarForm } from './CarForm'
+import { EventForm } from './EventForm'
 import { useConfirm } from '../hooks/useConfirm'
 import { resultsSorter } from '../utils/helpers'
 import './EventDetail.scss'
@@ -24,6 +30,7 @@ export function EventDetail() {
   const [results, setResults] = useState<Result[]>([])
   const [error, setError] = useState<string | null>(null)
   const [showAddCar, setShowAddCar] = useState(false)
+  const [showEditEvent, setShowEditEvent] = useState(false)
   const { showConfirm, confirmContent } = useConfirm()
 
   const loadEventCarsResults = useCallback(async () => {
@@ -67,6 +74,7 @@ export function EventDetail() {
   }, [cars])
 
   async function deleteResult(result: Result) {
+    if (!event) return
     const ok = await showConfirm({
       title: 'Delete result',
       message: 'Delete this result?',
@@ -76,6 +84,7 @@ export function EventDetail() {
     try {
       await apiPost('/api/resultDelete', { resultId: result.resultId })
       setResults((prev) => prev.filter((r) => r.resultId !== result.resultId))
+      await replicateResultDelete(result.resultId)
     } catch (e: unknown) {
       setError(String(e))
     }
@@ -91,6 +100,7 @@ export function EventDetail() {
     if (!ok) return
     try {
       await apiPost('/api/eventDelete', { eventId: event.eventId })
+      await replicateEventDelete(event.eventId)
       navigate('/events-list')
     } catch (e: unknown) {
       setError(String(e))
@@ -108,6 +118,7 @@ export function EventDetail() {
     try {
       await apiPost('/api/eventDeleteResults', { eventId: event.eventId })
       setResults([])
+      await replicateEventDeleteResults(event.eventId)
     } catch (e: unknown) {
       setError(String(e))
     }
@@ -127,11 +138,15 @@ export function EventDetail() {
       <h1>{event.eventName}</h1>
       <p>{DateTime.fromISO(event.eventDate).toFormat('LLL dd, yyyy')}</p>
 
-      {/* Action menu + race sub-screen buttons. Edit event is not ported yet;
-          download + destructive actions are wired. */}
+      {/* Action menu + race sub-screen buttons. */}
       <div className="event-actions">
         <Dropdown label="Action ▾" buttonClassName="btn-primary">
           <ul>
+          <li>
+            <button type="button" onClick={() => setShowEditEvent(true)}>
+              Edit event
+            </button>
+          </li>
           <li>
             <a
               href={`/api/results.csv?eventId=${event.eventId}`}
@@ -209,6 +224,17 @@ export function EventDetail() {
           onClose={() => setShowAddCar(false)}
           onSaved={() => {
             setShowAddCar(false)
+            loadEventCarsResults()
+          }}
+        />
+      </Modal>
+
+      <Modal open={showEditEvent} onClose={() => setShowEditEvent(false)}>
+        <EventForm
+          event={event}
+          onClose={() => setShowEditEvent(false)}
+          onSaved={() => {
+            setShowEditEvent(false)
             loadEventCarsResults()
           }}
         />

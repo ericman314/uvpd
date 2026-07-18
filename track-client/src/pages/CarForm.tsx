@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { apiPost } from '../api/client'
+import { replicate, sendImage } from '../api/replicator'
 import type { Car } from '../api/types'
 import { CameraCapture } from '../components/CameraCapture'
 
@@ -46,8 +47,11 @@ export function CarForm({ eventId, car, onClose, onSaved }: PropType) {
     // seeded /cars/*.jpg URL means "unchanged", so omit it on edit.
     const newImageData = image?.startsWith('data:') ? image : undefined
     try {
+      let savedCarId: number
+      let savedEventId: number | undefined
+      let secret: string
       if (isEdit) {
-        await apiPost('/api/carUpdate', {
+        const res = await apiPost<{ secret: string }>('/api/carUpdate', {
           carId: car.carId,
           carName,
           nickname,
@@ -55,17 +59,25 @@ export function CarForm({ eventId, car, onClose, onSaved }: PropType) {
           deferPerm,
           ...(newImageData ? { imageData: newImageData } : {}),
         })
-        onSaved(car.carId)
+        savedCarId = car.carId
+        savedEventId = car.eventId
+        secret = res.secret
       } else {
-        const res = await apiPost<{ result: { insertId: number } }>(
-          '/api/newCarSave',
-          {
-            eventId,
-            car: { carName, nickname, den, deferPerm, imageData: newImageData },
-          },
-        )
-        onSaved(res.result.insertId)
+        const res = await apiPost<{
+          result: { insertId: number }
+          secret: string
+        }>('/api/newCarSave', {
+          eventId,
+          car: { carName, nickname, den, deferPerm, imageData: newImageData },
+        })
+        savedCarId = res.result.insertId
+        savedEventId = eventId
+        secret = res.secret
       }
+
+      replicate(savedEventId)
+      if (newImageData) await sendImage(savedCarId, newImageData, secret)
+      onSaved(savedCarId)
     } catch (e: unknown) {
       setError(String(e))
       setSubmitting(false)

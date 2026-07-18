@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiGet, apiPost } from '../api/client'
+import { replicateResultDelete, replicateCarDelete } from '../api/replicator'
 import type { Car, Result } from '../api/types'
 import { useConfirm } from '../hooks/useConfirm'
 import { ResultsList } from '../components/ResultsList'
@@ -44,6 +45,7 @@ export function CarDetail() {
   )
 
   async function deleteResult(result: Result) {
+    if (!car) return
     const ok = await showConfirm({
       title: 'Delete result',
       message: 'Delete this result?',
@@ -53,6 +55,7 @@ export function CarDetail() {
     try {
       await apiPost('/api/resultDelete', { resultId: result.resultId })
       setResults((prev) => prev.filter((r) => r.resultId !== result.resultId))
+      await replicateResultDelete(result.resultId)
     } catch (e: unknown) {
       setError(String(e))
     }
@@ -68,6 +71,7 @@ export function CarDetail() {
     if (!ok) return
     try {
       await apiPost('/api/carDelete', { carId: car.carId })
+      await replicateCarDelete(car.carId)
       navigate(`/events/${car.eventId}`)
     } catch (e: unknown) {
       setError(String(e))

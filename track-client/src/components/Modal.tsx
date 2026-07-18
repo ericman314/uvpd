@@ -11,7 +11,9 @@ type PropType = {
 
 // Reusable modal built on the native <dialog> element: free backdrop,
 // Esc-to-close, and focus trapping. `open` drives showModal()/close(); closing
-// by any means (Esc, backdrop click, close button) calls onClose.
+// by any means (Esc, backdrop click, close button) calls onClose. Children are
+// only rendered while open, so a closed modal's content is fully inert (e.g. a
+// webcam inside it never starts) and resets fresh on each open.
 export function Modal({ open, onClose, children, className }: PropType) {
   const ref = useRef<HTMLDialogElement>(null)
 
@@ -38,7 +40,7 @@ export function Modal({ open, onClose, children, className }: PropType) {
       onClose={onClose}
       onClick={onClick}
     >
-      <div className="modal-content">{children}</div>
+      <div className="modal-content">{open && children}</div>
     </dialog>
   )
 }

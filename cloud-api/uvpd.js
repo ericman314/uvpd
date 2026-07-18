@@ -39,20 +39,67 @@ app.use(function (req, res, next) {
   next()
 })
 
-app.post('/api/v3/mysqldump', (req, res) => {
-  if (req.body.secret === config.secret) {
-    const cmd = `mysql --database pinewood -u${config.dbUser} -p${config.dbPw}`
-    try {
-      var output = execSync(cmd, { maxBuffer: 1e7, input: req.body.sql, timeout: 3000 })
-      res.json({ ok: true })
-      io.emit('newdata')
-    } catch (ex) {
-      console.log(ex.toString())
-      res.json({ err: ex })
-    }
-  } else {
-    res.json({ err: 'Incorrect secret' })
+// Gate a route on the shared secret (sent in the body or the query string).
+// req.body is undefined on GETs, so read each defensively.
+function requireSecret(req, res, next) {
+  const secret = (req.body?.secret) || (req.query?.secret)
+  if (secret === config.secret) return next()
+  res.json({ err: 'Incorrect secret' })
+}
+
+app.post('/api/v3/mysqldump', requireSecret, (req, res) => {
+  const cmd = `mysql --database pinewood -u${config.dbUser} -p${config.dbPw}`
+  try {
+    execSync(cmd, { maxBuffer: 1e7, input: req.body.sql, timeout: 3000 })
+    res.json({ ok: true })
+    io.emit('newdata')
+  } catch (ex) {
+    console.log(ex.toString())
+    res.json({ err: ex })
   }
+})
+
+// Delete endpoints — propagate local deletes to the cloud, which REPLACE-based replication (mysqldump) can't express.
+// Secret-gated; cascades mirror the track-server's local deletes (server.js). Promise wrapper for the callback-style
+// mysql driver.
+function q(sql, params) {
+  return new Promise((resolve, reject) => {
+    conn.query(sql, params, (err, rows) => (err ? reject(err) : resolve(rows)))
+  })
+}
+
+app.post('/api/v3/resultDelete', requireSecret, async (req, res) => {
+  await q('DELETE FROM Results WHERE resultId = ?', [req.body.resultId])
+  res.json({ ok: true })
+  io.emit('newdata')
+})
+
+app.post('/api/v3/carDelete', requireSecret, async (req, res) => {
+  const { carId } = req.body
+  await q('DELETE FROM Results WHERE carId = ?', [carId])
+  await q('DELETE FROM Achievements WHERE carId = ?', [carId])
+  await q('DELETE FROM Cars WHERE carId = ?', [carId])
+  res.json({ ok: true })
+  io.emit('newdata')
+})
+
+app.post('/api/v3/eventDelete', requireSecret, async (req, res) => {
+  const { eventId } = req.body
+  await q('DELETE Results FROM Results JOIN Cars ON Results.carId = Cars.carId WHERE Cars.eventId = ?', [eventId])
+  await q('DELETE FROM Achievements WHERE eventId = ?', [eventId])
+  await q('DELETE FROM Cars WHERE eventId = ?', [eventId])
+  await q('DELETE FROM Events WHERE eventId = ?', [eventId])
+  res.json({ ok: true })
+  io.emit('newdata')
+})
+
+// Bulk-delete an event's results (mirrors local /api/eventDeleteResults).
+app.post('/api/v3/eventDeleteResults', requireSecret, async (req, res) => {
+  const { eventId } = req.body
+  await q('DELETE Results FROM Results JOIN Cars ON Results.carId = Cars.carId WHERE Cars.eventId = ?', [eventId])
+  await q('DELETE FROM Achievements WHERE eventId = ?', [eventId])
+  res.json({ ok: true })
+  io.emit('newdata')
 })
 
 // app.get('/api/v3/mysqldump', (req, res) => {
@@ -174,54 +221,9 @@ app.post('/api/v3/checkin', function (req, res) {
 })
 
 
-/*
-// Old style using traditional file upload and resize on server
-app.post('/api/v3/checkin', function (req, res) {
- 
-  console.log(req.body)
-  console.log(req.files)
- 
-  var checkInId = uuid()
-  var carName = req.body.name
-  var nickname = req.body.nickname
-  var den = req.body.den
- 
-  // Add entry to database
-  conn.query("INSERT INTO CheckIn SET ?", [{ checkInId, carName, nickname, den }], function (err) {
-    if (err) {
-      res.redirect('/check-in-failed')
-      console.log(err)
-      return
-    }
- 
-    inFile = __dirname + '/tmp/' + req.files.photo.name
-    outFile = __dirname + '/checkin/' + checkInId + '.jpg'
- 
-    // Move file to temporary folder
-    req.files.photo.mv(inFile, function (err) {
-      if (err) {
-        res.redirect('/check-in-failed')
-        console.log(err)
-        return
-      }
- 
-      // Convert, resize, and crop
-      execFile('convert', [inFile, '-resize', '640x480^', '-gravity', 'center', '-extent', '640x480', '-quality', '90', outFile], function (err) {
-        if (err) {
-          res.redirect('/check-in-failed')
-          console.log(err)
-          return
-        }
-        res.redirect('/check-in-confirmation')
-      })
-    })
-  })
-})
-*/
-
-app.post('/api/v3/checkinadded', function (req, res) {
-  var checkInId = req.body.checkInId
-  var addedToEventId = req.body.eventId
+app.post('/api/v3/checkinadded', requireSecret, function (req, res) {
+  const checkInId = req.body.checkInId
+  const addedToEventId = req.body.eventId
   conn.query("UPDATE CheckIn SET addedToEventId = ? WHERE checkInId = ?", [addedToEventId, checkInId], function (err) {
     if (err) {
       console.log(err)
@@ -232,35 +234,29 @@ app.post('/api/v3/checkinadded', function (req, res) {
   })
 })
 
-app.get('/api/v3/checkinlist', function (req, res) {
-  if (req.query.secret === config.secret) {
-
-    let where = 'WHERE 1 = 1'
-    let params = []
-    if (req.query.notAdded) {
-      where += ' AND addedToEventId IS NULL'
-    }
-    if (req.query.recent) {
-      where += ' AND DATEDIFF(NOW(), time) < 4'
-    }
-    if (req.query.eventId) {
-      where += ' AND checkInEventId = ?'
-      params.push(req.query.eventId)
-    }
-    let sql = `SELECT * FROM CheckIn ${where} ORDER BY time DESC`
-
-    conn.query(sql, params, function (err, rows) {
-      if (err) {
-        console.log(err)
-        res.json({ err: err })
-        return
-      }
-      res.json(rows)
-    })
+app.get('/api/v3/checkinlist', requireSecret, function (req, res) {
+  let where = 'WHERE 1 = 1'
+  let params = []
+  if (req.query.notAdded) {
+    where += ' AND addedToEventId IS NULL'
   }
-  else {
-    res.json({ err: 'Incorrect secret' })
+  if (req.query.recent) {
+    where += ' AND DATEDIFF(NOW(), time) < 4'
   }
+  if (req.query.eventId) {
+    where += ' AND checkInEventId = ?'
+    params.push(req.query.eventId)
+  }
+  let sql = `SELECT * FROM CheckIn ${where} ORDER BY time DESC`
+
+  conn.query(sql, params, function (err, rows) {
+    if (err) {
+      console.log(err)
+      res.json({ err: err })
+      return
+    }
+    res.json(rows)
+  })
 })
 
 app.post('/api/v3/vote', function (req, res) {
@@ -285,59 +281,46 @@ app.post('/api/v3/vote', function (req, res) {
 
 })
 
-app.post('/api/v3/carImage', function (req, res) {
+app.post('/api/v3/carImage', requireSecret, function (req, res) {
 
-  console.log(req.body)
+  // Id becomes a filename, so it MUST be a bare integer — anchor the regex, or
+  // "../.." style values would be a path-traversal write.
+  const id = String(req.body.Id)
+  if (!/^[0-9]{1,9}$/.test(id)) {
+    return res.json({ err: 'Invalid Id' })
+  }
 
-  if (req.body.secret === config.secret) {
-
-    // Validate req.body.Id if you value your life
-    if (/[0-9]{1,9}/.test(req.body.Id)) {
-
-      var filename = dataDir + "/cars/" + req.body.Id + ".jpg"
-      if (req.body.imageData) {
-        console.log("Writing " + filename)
-        const imageData = req.body.imageData.replace('data:image/jpeg;base64,', '')
-        fs.writeFile(filename, new Buffer(imageData, "base64"), err => {
-          if (err) {
-            console.log(err)
-            return
-          }
-          res.json({ "result": "Image received" })
-        })
-
+  const filename = dataDir + "/cars/" + id + ".jpg"
+  if (req.body.imageData) {
+    console.log("Writing " + filename)
+    const imageData = req.body.imageData.replace('data:image/jpeg;base64,', '')
+    fs.writeFile(filename, Buffer.from(imageData, "base64"), err => {
+      if (err) {
+        console.log(err)
+        return
       }
-      else {
-        // Check to see if image file exists.
-
-        fs.stat(filename, function (err, stat) {
-          if (err == null) {
-            res.json({ "result": "Image exists" })
-          }
-          else if (err.code == 'ENOENT') {
-            res.json({ "result": "Image does not exist" })
-          }
-          else {
-            console.log('Some other error: ', err.code)
-            res.json({ "err": err.code })
-          }
-        })
-      }
-    }
-    else {
-      res.json("{err: Invalid Id}")
-    }
-
+      res.json({ "result": "Image received" })
+    })
   }
   else {
-    res.status(403).json({ err: 'Forbidden' })
-    console.log("Forbidden")
+    // Check to see if image file exists.
+    fs.stat(filename, function (err) {
+      if (err == null) {
+        res.json({ "result": "Image exists" })
+      }
+      else if (err.code == 'ENOENT') {
+        res.json({ "result": "Image does not exist" })
+      }
+      else {
+        console.log('Some other error: ', err.code)
+        res.json({ "err": err.code })
+      }
+    })
   }
-
 })
 
 app.get('/api/v3/carDetails/', function (req, res) {
-  if (/[0-9]{1,9}/.test(req.query.id)) {
+  if (/^[0-9]{1,9}$/.test(req.query.id)) {
     // Get all the details for this car
     let carId = parseInt(req.query.id)
 

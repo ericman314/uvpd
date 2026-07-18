@@ -285,20 +285,21 @@ app.get('/publicSiteUrl', (req, res) => {
   res.json({ url: config.publicSiteUrl })
 })
 
+// Tables the track-server owns and may push to the cloud. Whitelist only:
+// CheckIn/Votes are cloud-owned and must never be clobbered by replication,
+// and BestTimes/ResultsFromMongo/Users are dead Mongo-era tables.
+const REPLICATED_TABLES = ['Events', 'Cars', 'Results', 'Achievements']
+
 app.get('/mysqldump', (req, res) => {
 
-  let where = ''
-  console.log(req.query.eventId)
-  if (/[0-9]{1,24}/.test(req.query.eventId)) {
-    where = `--where="eventId=${req.query.eventId}"`
-  }
-  console.log(where)
-
-  let cmd
-  if (req.query.complete) {
-    cmd = `mysqldump --databases pinewood -u${config.mysql_user} -p${config.mysql_pass} --single-transaction`
-  } else {
-    cmd = `mysqldump --databases pinewood -u${config.mysql_user} -p${config.mysql_pass} --single-transaction --no-create-info --replace ${where}`
+  // Data-only, REPLACE INTO, whitelisted tables — never DROP/CREATE, never
+  // touch cloud-owned tables. One param: eventId present scopes to that event;
+  // omitted dumps the whole (whitelisted) DB. All four tables have an eventId
+  // column, so the WHERE applies cleanly to each.
+  const tables = REPLICATED_TABLES.join(' ')
+  let cmd = `mysqldump pinewood ${tables} -u${config.mysql_user} -p${config.mysql_pass} --single-transaction --no-create-info --replace`
+  if (/^[0-9]{1,24}$/.test(req.query.eventId)) {
+    cmd += ` --where="eventId=${req.query.eventId}"`
   }
 
   exec(cmd, { maxBuffer: 1e7 }, (err, stdout, stderr) => {

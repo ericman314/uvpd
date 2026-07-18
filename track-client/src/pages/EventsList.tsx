@@ -2,9 +2,10 @@ import { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { DateTime } from 'luxon'
 import { apiGet } from '../api/client'
+import { replicate } from '../api/replicator'
 import type { Event } from '../api/types'
 import { Modal } from '../components/Modal'
-import { EventNew } from './EventNew'
+import { EventForm } from './EventForm'
 
 // Ported from the Angular events-list route (EventListCtrl + events-list.html).
 // The old controller carried a lot of dead code (event-code login, data-all/
@@ -34,13 +35,16 @@ export function EventsList() {
     <div className="EventsList">
       <h1>Events</h1>
 
-      <p>
+      <p className="events-actions">
         <button
           type="button"
           className="btn-primary"
           onClick={() => setShowNew(true)}
         >
           New Event
+        </button>
+        <button type="button" onClick={() => replicate()}>
+          Replicate DB
         </button>
       </p>
 
@@ -60,9 +64,9 @@ export function EventsList() {
       </p>
 
       <Modal open={showNew} onClose={() => setShowNew(false)}>
-        <EventNew
+        <EventForm
           onClose={() => setShowNew(false)}
-          onCreated={(eventId) => navigate(`/events/${eventId}`)}
+          onSaved={(eventId) => navigate(`/events/${eventId}`)}
         />
       </Modal>
     </div>
