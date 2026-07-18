@@ -119,26 +119,29 @@ app.post('/api/eventDeleteResults', (req, res) => {
 })
 
 app.get('/api/results.csv', (req, res) => {
-  if (req.query.eventId) {
-    getResultsData(req.query.eventId).then(data => {
-      var csv = []
-      for (var i = 0; i < data.flatTable.length; i++) {
-        for (var j = 0; j < data.flatTable[i].length; j++) {
-          //      data.flatTable.[i][j] = data.flatTable.[i][j].replace(/"/g, '\\"');
-        }
-        csv[i] = data.flatTable[i].join(',')
+  if (!req.query.eventId) {
+    return res.status(400).send('Missing query parameter: eventId')
+  }
+  getResultsData(req.query.eventId).then(
+    data => {
+      // Quote cells containing comma/quote/newline; double embedded quotes.
+      const escape = cell => {
+        const s = String(cell)
+        return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
       }
-
-      var csvText = csv.join('\r\n')
-      res.type('text/csv').send(csvText)
+      const csvText = data.flatTable
+        .map(row => row.map(escape).join(','))
+        .join('\r\n')
+      res
+        .type('text/csv')
+        .set('Content-Disposition', `attachment; filename="results-${req.query.eventId}.csv"`)
+        .send(csvText)
     },
-      err => {
-        res.send(err)
-      })
-  }
-  else {
-    res.send("Missing query parameter: eventId")
-  }
+    err => {
+      console.error(err)
+      res.status(500).send(String(err))
+    }
+  )
 })
 
 app.get('/api/eventCarsResults', (req, res) => {
@@ -531,105 +534,75 @@ io.on("connection", sock => {
 })
 
 
+/**
+ * Build the results CSV table for an event. Returns { flatTable } — an array of
+ * rows (arrays of cells). Header: Car, Place, Best time, Average time, Group,
+ * then Run 1, Run 2, … each car's result times in run order (by resultDate),
+ * left to right. Place is the car's overall rank by best time; rows are sorted
+ * by it.
+ */
 function getResultsData(eventId) {
-
-
-  var queries = []
-
-  let selectEventsSql = mysql.format('SELECT * FROM Events WHERE eventId = ?', [eventId])
-
-  let selectCarsSql = mysql.format(`SELECT Cars.*, GROUP_CONCAT(DISTINCT Achievements.Achievement SEPARATOR ',') as achievements
-  FROM Cars
-  LEFT JOIN Achievements ON Cars.carId = Achievements.carId
-  WHERE Cars.eventId = ?
-  GROUP BY Cars.carId`, [eventId])
-
-  let selectResultsSql = mysql.format('SELECT * FROM Results JOIN Cars ON Results.carId = Cars.carId WHERE Cars.eventId = ?', [eventId])
-
-  queries.push(query(selectEventsSql))
-  queries.push(query(selectCarsSql))
-  queries.push(query(selectResultsSql))
-
-  Promise.all(queries).then(
-    results => {
-      console.log(results)
-      // res.json({ event: results[0][0], cars: results[1], results: results[2] })
-    },
-    reason => {
-      res.json({ err: reason })
-      console.log(reason)
-    }
-  )
-
-  return 
-
-  return Event.findById(eventId).then(doc => {
-
-    // DO something with doc and return it
-    var data = []
-
-    var mult = doc.multiplier
-    var header = ["Car", "place", "Best time", "Average time", "den", "Weight", "COM"]
-
-    for (var i = 0; i < mult; i++) {
-      header.push("Blue Lane")
-      header.push("Yellow Lane")
-      header.push("Green Lane")
-      header.push("Red Lane")
+  return Promise.all([
+    query('SELECT * FROM Cars WHERE eventId = ? ORDER BY carId', [eventId]),
+    query(
+      'SELECT Results.* FROM Results JOIN Cars ON Results.carId = Cars.carId WHERE Cars.eventId = ? ORDER BY Results.resultDate',
+      [eventId]
+    ),
+    query('SELECT carId, Achievement FROM Achievements WHERE eventId = ?', [eventId]),
+  ]).then(([cars, results, achievements]) => {
+    // Group results by car, preserving run order (query is by resultDate).
+    const byCar = {}
+    for (const r of results) {
+      (byCar[r.carId] = byCar[r.carId] || []).push(r)
     }
 
-    //data.push(header);  
-
-    bestTimes = []
-
-    for (var i = 0; i < doc.cars.length; i++) {
-
-      var laneMultCount = [0, 0, 0, 0]
-
-      var row = [doc.cars[i].name, 0, 0, 0, doc.cars[i].den, doc.cars[i].weight, doc.cars[i].com]
-      var offsetHeader = row.length - 1
-
-      var bestTime = 99999
-      var sumTime = 0
-      for (var j = 0; j < doc.cars[i].results.length; j++) {
-        var result = doc.cars[i].results[j]
-        bestTime = Math.min(bestTime, result.time)
-        sumTime += result.time
-        row[offsetHeader + result.lane + laneMultCount[result.lane - 1] * 4] = result.time
-        laneMultCount[result.lane - 1]++
-      }
-      if (doc.cars[i].results.length > 0) {
-        sumTime /= doc.cars[i].results.length
-      }
-      else {
-        sumTime = ''
-        bestTime = ''
-      }
-
-      row[3] = sumTime
-      row[2] = bestTime
-
-      bestTimes.push({ Id: doc.cars[i]._id.toString(), BestTime: bestTime })
-
-      for (var k = 0; k < row.length; k++) {
-        if (typeof (row[k]) === 'undefined') {
-          row[k] = ''
-        }
-      }
-
-      console.log(row)
-
-      data.push(row)
-
+    // Achievements per car (comma-joined; the CSV escaper quotes the cell).
+    const achievementsByCar = {}
+    for (const a of achievements) {
+      (achievementsByCar[a.carId] = achievementsByCar[a.carId] || []).push(a.Achievement)
     }
 
-    data.splice(0, 0, header)
+    // A time of 10 is the DNF sentinel — excluded from best time and average.
+    const DNF = 10
+    const finishedTimes = car =>
+      (byCar[car.carId] || []).map(r => r.time).filter(t => t !== DNF)
 
-    console.log(data.map(a => [a[0], a[1], a[2], a[3], a[4]].join(',')))
+    const bestTimeOf = car => {
+      const ts = finishedTimes(car)
+      return ts.length ? Math.min(...ts) : Infinity
+    }
+    const ranked = [...cars].sort((a, b) => bestTimeOf(a) - bestTimeOf(b))
+    const placeById = {}
+    ranked.forEach((car, i) => {
+      placeById[car.carId] = bestTimeOf(car) === Infinity ? '' : i + 1
+    })
 
-    return { flatTable: data, docCode: doc.code, bestTimes: bestTimes }
+    // Widest run count drives how many Run N columns the header needs. The
+    // Achievements column comes AFTER all maxRuns columns so it stays aligned
+    // across cars regardless of how many runs each has.
+    const maxRuns = cars.reduce((m, c) => Math.max(m, (byCar[c.carId] || []).length), 0)
+    const header = ['Car', 'Place', 'Best time', 'Average time', 'Group']
+    for (let i = 0; i < maxRuns; i++) header.push('Run ' + (i + 1))
+    header.push('Achievements')
 
-  }, console.error)
+    const rows = ranked.map(car => {
+      const rs = byCar[car.carId] || []
+      const finished = finishedTimes(car)
+      const best = finished.length ? Math.min(...finished) : ''
+      const avg = finished.length
+        ? finished.reduce((s, t) => s + t, 0) / finished.length
+        : ''
+      const row = [car.carName, placeById[car.carId], best, avg, car.den || '']
+      // Pad to maxRuns so the Achievements column lands in the same place.
+      for (let i = 0; i < maxRuns; i++) {
+        row.push(rs[i] ? (rs[i].time === DNF ? 'DNF' : rs[i].time) : '')
+      }
+      row.push((achievementsByCar[car.carId] || []).join(', '))
+      return row
+    })
+
+    return { flatTable: [header, ...rows] }
+  })
 }
 
 /**************** serial ***********************/
