@@ -68,12 +68,13 @@ app.post('/api/v3/mysqldump', (req, res) => {
 app.get('/api/v3/events', function (req, res) {
   var where = 'WHERE hidden = 0'
   var params = []
+  // Compare against Utah-local date (server is UTC). -06:00 is MDT.
   if (req.query.hasOwnProperty('dayStart')) {
-    where += ' AND DATEDIFF(eventDate, NOW()) >= ? '
+    where += " AND DATEDIFF(eventDate, CONVERT_TZ(NOW(), '+00:00', '-06:00')) >= ? "
     params.push(req.query.dayStart)
   }
   if (req.query.hasOwnProperty('dayEnd')) {
-    where += ' AND DATEDIFF(eventDate, NOW()) < ? '
+    where += " AND DATEDIFF(eventDate, CONVERT_TZ(NOW(), '+00:00', '-06:00')) < ? "
     params.push(req.query.dayEnd)
   }
   conn.query(`SELECT * FROM Events ${where} ORDER BY EventDate DESC`, params, function (err, rows) {
