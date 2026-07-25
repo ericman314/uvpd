@@ -180,41 +180,43 @@ export function EventDetail() {
       <div className="actions-row">
         <Dropdown label="Action ▾" buttonClassName="btn-primary">
           <ul>
-          <li>
-            <button type="button" onClick={() => setShowEditEvent(true)}>
-              Edit event
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              onClick={handleReplicate}
-              disabled={replicating}
-            >
-              {replicating ? 'Replicating…' : 'Replicate event'}
-            </button>
-          </li>
-          <li>
-            <a
-              href={`/api/results.csv?eventId=${event.eventId}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Download results
-            </a>
-          </li>
-          <li>
-            <button type="button" onClick={deleteResults}>
-              Delete all results
-            </button>
-          </li>
-          <li>
-            <button type="button" onClick={deleteEvent}>
-              Delete event
-            </button>
-          </li>
-        </ul>
-      </Dropdown>
+            <li>
+              <button type="button" onClick={() => setShowEditEvent(true)}>
+                Edit event
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={handleReplicate}
+                disabled={replicating}
+              >
+                {replicating ? 'Replicating…' : 'Replicate event'}
+              </button>
+            </li>
+            <li className="divider" />
+            <li>
+              <a
+                href={`/api/results.csv?eventId=${event.eventId}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Download results
+              </a>
+            </li>
+            <li className="divider" />
+            <li>
+              <button type="button" onClick={deleteResults}>
+                Delete all results
+              </button>
+            </li>
+            <li>
+              <button type="button" onClick={deleteEvent}>
+                Delete event
+              </button>
+            </li>
+          </ul>
+        </Dropdown>
 
         <button
           type="button"

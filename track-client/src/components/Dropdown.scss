@@ -19,6 +19,14 @@
     list-style: none;
   }
 
+  /* Matches the old Bootstrap 3 .dropdown-menu .divider look. */
+  li.divider {
+    height: 1px;
+    margin: 6px 0;
+    overflow: hidden;
+    background: #e5e5e5;
+  }
+
   a,
   button {
     display: block;
