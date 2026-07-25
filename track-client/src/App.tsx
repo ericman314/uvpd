@@ -3,11 +3,11 @@ import { EventsList } from './pages/EventsList'
 import { EventDetail } from './pages/EventDetail'
 import { CarDetail } from './pages/CarDetail'
 import { Welcome } from './pages/Welcome'
-import { Stub } from './pages/Stub'
+import { SerialEmulator } from './pages/SerialEmulator'
 import './App.scss'
 
 // App shell + routing. Routes mirror the Angular appStates.js so URLs match the
-// old app one-to-one; pages not yet ported render a Stub placeholder.
+// old app one-to-one.
 export function App() {
   return (
     <BrowserRouter>
@@ -25,7 +25,7 @@ export function App() {
           <Route path="/events/:eventId" element={<EventDetail />} />
           <Route path="/events/:eventId/welcome" element={<Welcome />} />
           <Route path="/car/:carId" element={<CarDetail />} />
-          <Route path="/calibrate" element={<Stub name="Calibrate Scale" />} />
+          <Route path="/emulator" element={<SerialEmulator />} />
           <Route path="*" element={<Navigate to="/events-list" replace />} />
         </Routes>
       </main>

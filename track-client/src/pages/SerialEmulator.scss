@@ -1,0 +1,68 @@
+/* Serial emulator page (pages/SerialEmulator.tsx). A testing tool, kept plain.
+   Lanes are columns left-to-right (raw 3..0), each tinted with its race-view
+   lane color (display lane 1..4 = blue/yellow/green/red). */
+.SerialEmulator {
+  .emu-hint {
+    color: #777;
+    margin-top: 0;
+  }
+
+  .emu-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+    }
+  }
+
+  .emu-lanes {
+    display: flex;
+    gap: 12px;
+  }
+
+  .emu-lane {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    width: 150px;
+    padding: 14px;
+    border-radius: 6px;
+
+    .emu-lane-label {
+      font-weight: 600;
+      text-align: center;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 16px;
+      text-align: center;
+      border: 1px solid rgba(0, 0, 0, 0.25);
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 12px 10px;
+      font-size: 15px;
+    }
+  }
+
+  /* Lane tints from the race-view palette (App.scss .lane-color-*), by display
+     lane number. Left-to-right this yields blue, yellow, green, red. */
+  .lane-bg-1 {
+    background: #90caf9;
+  }
+  .lane-bg-2 {
+    background: #ffeb3b;
+  }
+  .lane-bg-3 {
+    background: #8bc34a;
+  }
+  .lane-bg-4 {
+    background: #e57373;
+  }
+}

@@ -1,18 +1,40 @@
+import { useEffect, useState } from 'react'
+import { getSocket } from '../api/socket'
 import './SerialIndicator.scss'
 
-// Stub for the track/serial-port indicator. In the Angular app this showed the
-// per-lane pin states (event.html .pinStateIndicator) driven by socket.io
-// serialState / pinStateChange events. Wiring to the live socket feed is
-// deferred along with the rest of the race machinery; for now it renders a
-// static placeholder so the layout is in place.
+// Per-lane pin-state indicator (ported from event.html .pinStateIndicator).
+// Subscribes to the live socket feed: pinStateChange sets a lane's state.
+// data.lane is the display lane (1..4) — the server already flipped the raw
+// wire lane — so it indexes directly. States default to 1 (uncovered), matching
+// the Angular init [, 1, 1, 1, 1].
+const DISPLAY_LANES = [1, 2, 3, 4]
+
 export function SerialIndicator() {
+  const [pinStates, setPinStates] = useState<Record<number, number>>({
+    1: 1,
+    2: 1,
+    3: 1,
+    4: 1,
+  })
+
+  useEffect(() => {
+    const socket = getSocket()
+    const onPin = (data: { lane: number; state: number }) =>
+      setPinStates((prev) => ({ ...prev, [data.lane]: data.state }))
+
+    socket.on('pinStateChange', onPin)
+    return () => {
+      socket.off('pinStateChange', onPin)
+    }
+  }, [])
+
   return (
-    <div className="pin-state-indicator" title="Serial/track status (stub)">
-      <span className="serial-status">Track: —</span>
-      <span className="lane-color-1">·</span>
-      <span className="lane-color-2">·</span>
-      <span className="lane-color-3">·</span>
-      <span className="lane-color-4">·</span>
+    <div className="pin-state-indicator">
+      {DISPLAY_LANES.map((lane) => (
+        <span key={lane} className={`lane-color-${lane}`}>
+          {pinStates[lane]}
+        </span>
+      ))}
     </div>
   )
 }

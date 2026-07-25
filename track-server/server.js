@@ -527,6 +527,17 @@ app.post('/api/videoUpload', (req, res) => {
   })
 })
 
+// Serial emulator: inject a raw serial line into the same handler the real port
+// feeds, so the dev panel can drive a race with no Arduino attached. Same seam
+// as the 'simulate' socket event, over HTTP.
+app.post('/api/simulate', (req, res) => {
+  if (typeof req.body.line !== 'string') {
+    return res.json({ err: 'Missing line' })
+  }
+  handleSerialData(req.body.line)
+  res.json({ result: 'ok' })
+})
+
 app.get('*', (req, res) => {
   res.sendFile(__dirname + '/public/index.html')
 })
@@ -536,16 +547,12 @@ app.get('*', (req, res) => {
 
 
 
-var socket
-
 io.on("connection", sock => {
-  socket = sock
-
-  // Simulation
-  socket.on('simulate', data => {
+  // Serial emulation: a client can inject a raw serial line, handled exactly
+  // like real port data and broadcast to all clients.
+  sock.on('simulate', data => {
     handleSerialData(data)
   })
-
 })
 
 
@@ -641,14 +648,11 @@ setInterval(function () {
         port = new SerialPort({ path: usbPorts[0], baudRate: 115200 }, function (err) {
           if (err) {
             console.log(err)
-            socket.emit("serialState", { connected: false, err: err })
+            io.emit("serialState", { connected: false, err: err })
             port = null
           } else {
             console.log('Connected!')
-          }
-
-          if (socket) {
-            socket.emit("serialState", { connected: true, port: usbPorts[0] })
+            io.emit("serialState", { connected: true, port: usbPorts[0] })
           }
         })
 
@@ -680,84 +684,59 @@ setInterval(function () {
       }
       else {
         //console.log("No serial ports available");
-        if (socket) {
-          socket.emit("serialState", { connected: false, err: "No serial ports available" })
-        }
+        io.emit("serialState", { connected: false, err: "No serial ports available" })
       }
     }).catch(err => {
       console.log(err)
     })
   }
 
-  if (port && port.isOpen && socket) {
-    socket.emit("serialState", { connected: true })
+  if (port && port.isOpen) {
+    io.emit("serialState", { connected: true })
   }
 
 }, 5000)
 
 let startTime
 
+// Parse one serial line and broadcast the corresponding event to every
+// connected client via io.emit — the track view and the emulator (in another
+// tab) both need it, so this must fan out, not target a single socket.
 function handleSerialData(data) {
   console.log(data)
   if (data[0] === 'S') {
-    if (socket) {
-      startTime = Date.now()
-      socket.emit('startingGateReleased')
-    }
-    else {
-      console.log("Warning: socket not open")
-    }
+    startTime = Date.now()
+    io.emit('startingGateReleased')
   }
   else if (data[0] === 'T') {
     var match = /^Trigger,([0-3]),([0-9]+)/.exec(data)
-
-    if (socket) {
-      if (match) {
-        var lane = 5-(1+parseInt(match[1]))
-        let time = parseInt(match[2]) * 1e-6
-        let softwareTime = (Date.now() - startTime) * 1e-3
-        let ratio = time / softwareTime
-        console.log("hw/sw = " + ratio + ")")
-        socket.emit('trigger', { lane, time, softwareTime })
-      }
-      else {
-        console.log("Warning: invalid trigger message received: " + data)
-      }
+    if (match) {
+      var lane = 5-(1+parseInt(match[1]))
+      let time = parseInt(match[2]) * 1e-6
+      let softwareTime = (Date.now() - startTime) * 1e-3
+      let ratio = time / softwareTime
+      console.log("hw/sw = " + ratio + ")")
+      io.emit('trigger', { lane, time, softwareTime })
     }
     else {
-      console.log("Warning: socket not open")
+      console.log("Warning: invalid trigger message received: " + data)
     }
   }
   else if (data[0] === 'E') {
-    if (socket) {
-      socket.emit('arduinoError', data)
-    }
-    else {
-      console.log("Warning: socket not open")
-    }
+    io.emit('arduinoError', data)
   }
   else if (data[0] === 'R') {
-    if (socket) {
-      socket.emit('readyForStart')
-    }
-    else {
-      console.log("Warning: socket not open")
-    }
+    io.emit('readyForStart')
   }
   else if (data[0] === 'P') {
-    if (socket) {
-      var match = /^Pin state change,([0-3]),([01])/.exec(data)
-
-      if (socket) {
-        if (match) {
-          var lane = 5-(1+parseInt(match[1]))
-          let state = parseInt(match[2])
-          socket.emit('pinStateChange', { lane, state })
-        }
-      }
+    var match = /^Pin state change,([0-3]),([01])/.exec(data)
+    if (match) {
+      var lane = 5-(1+parseInt(match[1]))
+      let state = parseInt(match[2])
+      io.emit('pinStateChange', { lane, state })
     }
     else {
-      console.log("Warning: unrecognized message: " + data)
+      console.log("Warning: invalid pin state message received: " + data)
     }
   }
 

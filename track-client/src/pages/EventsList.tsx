@@ -81,6 +81,11 @@ export function EventsList() {
                 {replicating ? 'Replicating…' : 'Replicate DB'}
               </button>
             </li>
+            <li>
+              <Link to="/emulator" target="_blank" rel="noreferrer">
+                Serial emulator
+              </Link>
+            </li>
           </ul>
         </Dropdown>
       </div>
@@ -96,10 +101,6 @@ export function EventsList() {
           </Link>
         </p>
       ))}
-
-      <p>
-        <Link to="/calibrate">Calibrate Scale</Link>
-      </p>
 
       <Modal open={showNew} onClose={() => setShowNew(false)}>
         <EventForm
