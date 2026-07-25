@@ -32,6 +32,10 @@ const UNCOVERED = 1
 
 const CAP_SECONDS = 6
 
+// Randomizer range — plausible finish times for a heat.
+const RANDOM_MIN = 2.7
+const RANDOM_MAX = 4.0
+
 function send(line: string) {
   apiPost('/api/simulate', { line }).catch((e) =>
     console.error('simulate failed', line, e),
@@ -182,6 +186,19 @@ export function SerialEmulator() {
     sendTrigger(raw, seconds)
   }
 
+  // Fill every lane with a random time in [2.7, 4.0]. All lanes then have a
+  // value, so the next Start runs them all as scheduled lanes.
+  function handleRandomize() {
+    setTimes(
+      Object.fromEntries(
+        RAW_LANES.map((raw) => [
+          raw,
+          (RANDOM_MIN + Math.random() * (RANDOM_MAX - RANDOM_MIN)).toFixed(2),
+        ]),
+      ),
+    )
+  }
+
   function togglePin(raw: number) {
     const next = pin[raw] === COVERED ? UNCOVERED : COVERED
     send(`Pin state change,${raw},${next}`)
@@ -206,6 +223,9 @@ export function SerialEmulator() {
         </button>
         <button type="button" onClick={handleStart} disabled={racing}>
           S — Start
+        </button>
+        <button type="button" onClick={handleRandomize} disabled={racing}>
+          Randomize times
         </button>
       </div>
 
