@@ -1,11 +1,5 @@
 /* Event detail page (pages/EventDetail.tsx). Scoped under .EventDetail. */
 .EventDetail {
-  .event-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
   /* Cars grid — ported from event.html inline styles / main.css. */
   .cars-grid {
     display: flex;

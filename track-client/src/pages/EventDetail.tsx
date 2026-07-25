@@ -139,7 +139,7 @@ export function EventDetail() {
       <p>{DateTime.fromISO(event.eventDate).toFormat('LLL dd, yyyy')}</p>
 
       {/* Action menu + race sub-screen buttons. */}
-      <div className="event-actions">
+      <div className="actions-row">
         <Dropdown label="Action ▾" buttonClassName="btn-primary">
           <ul>
           <li>

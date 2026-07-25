@@ -61,6 +61,14 @@ button {
   }
 }
 
+/* A horizontal row of action buttons — shared by the events-list and event
+   detail pages (New Event / Action / Welcome / START RACE). */
+.actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* A button that looks like a link — used for actions the Angular app rendered
    as <a ng-click> (Back, Edit car, Delete car). */
 .link-button {

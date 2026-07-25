@@ -2,9 +2,11 @@ import { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { DateTime } from 'luxon'
 import { apiGet } from '../api/client'
-import { replicate } from '../api/replicator'
+import { replicateNow } from '../api/replicator'
 import type { Event } from '../api/types'
 import { Modal } from '../components/Modal'
+import { Dropdown } from '../components/Dropdown'
+import { useToast } from '../components/toast/useToast'
 import { EventForm } from './EventForm'
 
 // Ported from the Angular events-list route (EventListCtrl + events-list.html).
@@ -16,6 +18,8 @@ export function EventsList() {
   const [events, setEvents] = useState<Event[]>([])
   const [error, setError] = useState<string | null>(null)
   const [showNew, setShowNew] = useState(false)
+  const [replicating, setReplicating] = useState(false)
+  const showToast = useToast()
 
   useEffect(() => {
     (async () => {
@@ -31,11 +35,23 @@ export function EventsList() {
   // Sorted by date, newest first (matches `orderBy: 'eventDate' : true`).
   const sorted = useMemo(() => [...events].sort((a, b) => b.eventDate.localeCompare(a.eventDate)), [events])
 
+  async function handleReplicate() {
+    setReplicating(true)
+    try {
+      await replicateNow()
+      showToast('Replicated to cloud', 'success')
+    } catch (e: unknown) {
+      showToast(`Replication failed: ${e}`, 'error')
+    } finally {
+      setReplicating(false)
+    }
+  }
+
   return (
     <div className="EventsList">
       <h1>Events</h1>
 
-      <p className="events-actions">
+      <div className="actions-row">
         <button
           type="button"
           className="btn-primary"
@@ -43,10 +59,21 @@ export function EventsList() {
         >
           New Event
         </button>
-        <button type="button" onClick={() => replicate()}>
-          Replicate DB
-        </button>
-      </p>
+        <Dropdown label="Action ▾" buttonClassName="btn-primary">
+          <ul>
+            <li>
+              <button
+                type="button"
+                onClick={handleReplicate}
+                disabled={replicating}
+              >
+                {replicating ? 'Replicating…' : 'Replicate DB'}
+              </button>
+            </li>
+          </ul>
+        </Dropdown>
+      </div>
+      <br />
 
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
 

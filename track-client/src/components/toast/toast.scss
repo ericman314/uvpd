@@ -1,0 +1,64 @@
+/* Toast notifications (components/toast/ToastProvider.tsx). Fixed stack in the
+   bottom-right; each toast auto-dismisses and is click-to-dismiss. */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.toast {
+  min-width: 220px;
+  max-width: 360px;
+  text-align: left;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 4px;
+  font-family: "Exo 2", sans-serif;
+  font-size: 15px;
+  color: #fff7f0;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  animation: toast-in 0.18s ease-out;
+}
+
+/* Hover selectors are nested under .toast-container to out-specify the global
+   `button:hover:not(:disabled)` rule in App.scss. */
+.toast-success {
+  background: #3c8c3c;
+
+  .toast-container &:hover {
+    background: #347a34;
+  }
+}
+
+.toast-error {
+  background: #ad431f;
+
+  .toast-container &:hover {
+    background: #97391a;
+  }
+}
+
+.toast-info {
+  background: #555;
+
+  .toast-container &:hover {
+    background: #454545;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

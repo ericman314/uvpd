@@ -51,6 +51,12 @@ export function replicate(eventId?: number): void {
   if (!timer) timer = setTimeout(processQueue, DEBOUNCE_MS)
 }
 
+// Immediate, awaitable whole-DB replicate for the explicit "Replicate DB"
+// button — bypasses the debounce so the caller can show success/failure.
+export function replicateNow(): Promise<void> {
+  return processOne(undefined)
+}
+
 // Push a car photo (JPEG data URL) to the cloud. Secret comes from the caller
 // (e.g. the /newCarSave or /carUpdate response), as in the Angular version.
 export async function sendImage(
