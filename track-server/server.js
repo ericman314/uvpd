@@ -293,28 +293,43 @@ app.get('/publicSiteUrl', (req, res) => {
 // and BestTimes/ResultsFromMongo/Users are dead Mongo-era tables.
 const REPLICATED_TABLES = ['Events', 'Cars', 'Results', 'Achievements']
 
-app.get('/mysqldump', (req, res) => {
+// Whitelisted tables, ordered children-first so DELETEs respect FKs.
+const TABLES_CHILD_FIRST = ['Achievements', 'Results', 'Cars', 'Events']
 
-  // Data-only, REPLACE INTO, whitelisted tables — never DROP/CREATE, never
-  // touch cloud-owned tables. One param: eventId present scopes to that event;
-  // omitted dumps the whole (whitelisted) DB. All four tables have an eventId
-  // column, so the WHERE applies cleanly to each.
-  const tables = REPLICATED_TABLES.join(' ')
-  let cmd = `mysqldump pinewood ${tables} -u${config.mysql_user} -p${config.mysql_pass} --single-transaction --no-create-info --replace`
-  if (/^[0-9]{1,24}$/.test(req.query.eventId)) {
-    cmd += ` --where="eventId=${req.query.eventId}"`
-  }
+const MYSQLDUMP_BASE = () =>
+  `mysqldump pinewood ${REPLICATED_TABLES.join(' ')} -u${config.mysql_user} -p${config.mysql_pass} --single-transaction --no-create-info`
 
-  exec(cmd, { maxBuffer: 1e7 }, (err, stdout, stderr) => {
+// Run a mysqldump command and reply with { output, secret }. `prefix` is SQL
+// prepended to the dump (the DELETEs for a complete replace); '' for none.
+function runDump(cmd, prefix, res) {
+  exec(cmd, { maxBuffer: 1e7 }, (err, stdout) => {
     if (err) {
       console.error(err)
       res.json({ err: err })
-    }
-    else {
-      res.json({ output: stdout, secret: config.apiSecret })
+    } else {
+      res.json({ output: prefix + stdout, secret: config.apiSecret })
     }
   })
+}
 
+app.get('/mysqldump', (req, res) => {
+  // Data-only dumps of the whitelisted tables — never DROP/CREATE, never touch
+  // cloud-owned tables (CheckIn/Votes). Two fully separate branches so a scoped
+  // and a full sync never share flags:
+  //
+  //   scoped (eventId): pure upsert — REPLACE INTO ... WHERE eventId=N. Only
+  //     that event's rows are touched; nothing is deleted.
+  //   full (no eventId): complete replace — DELETE every whitelisted table,
+  //     then plain INSERTs. Rows deleted locally can't survive as phantoms.
+  //     mysqldump wraps the output in a transaction so it applies atomically.
+  if (/^[0-9]{1,24}$/.test(req.query.eventId)) {
+    const cmd = `${MYSQLDUMP_BASE()} --replace --where="eventId=${req.query.eventId}"`
+    runDump(cmd, '', res)
+  } else {
+    const cmd = MYSQLDUMP_BASE()
+    const prefix = TABLES_CHILD_FIRST.map((t) => `DELETE FROM ${t};`).join('\n') + '\n'
+    runDump(cmd, prefix, res)
+  }
 })
 
 function sendCarToRemoteServer(carId, eventId, Name, imageData) {

@@ -7,6 +7,7 @@ import type { Event } from '../api/types'
 import { Modal } from '../components/Modal'
 import { Dropdown } from '../components/Dropdown'
 import { useToast } from '../components/toast/useToast'
+import { useConfirm } from '../hooks/useConfirm'
 import { EventForm } from './EventForm'
 
 // Ported from the Angular events-list route (EventListCtrl + events-list.html).
@@ -20,6 +21,7 @@ export function EventsList() {
   const [showNew, setShowNew] = useState(false)
   const [replicating, setReplicating] = useState(false)
   const showToast = useToast()
+  const { showConfirm, confirmContent } = useConfirm()
 
   useEffect(() => {
     (async () => {
@@ -36,6 +38,15 @@ export function EventsList() {
   const sorted = useMemo(() => [...events].sort((a, b) => b.eventDate.localeCompare(a.eventDate)), [events])
 
   async function handleReplicate() {
+    // Full replicate is a complete replace: it overwrites all cloud event data
+    // with this laptop's copy. Confirm before the destructive sync.
+    const ok = await showConfirm({
+      title: 'Replicate entire DB',
+      message:
+        'This replaces ALL event data on the public site with this laptop’s copy. Continue?',
+      confirmLabel: 'Replicate',
+    })
+    if (!ok) return
     setReplicating(true)
     try {
       await replicateNow()
@@ -96,6 +107,8 @@ export function EventsList() {
           onSaved={(eventId) => navigate(`/events/${eventId}`)}
         />
       </Modal>
+
+      {confirmContent}
     </div>
   )
 }

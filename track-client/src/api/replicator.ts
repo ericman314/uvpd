@@ -51,10 +51,11 @@ export function replicate(eventId?: number): void {
   if (!timer) timer = setTimeout(processQueue, DEBOUNCE_MS)
 }
 
-// Immediate, awaitable whole-DB replicate for the explicit "Replicate DB"
-// button — bypasses the debounce so the caller can show success/failure.
-export function replicateNow(): Promise<void> {
-  return processOne(undefined)
+// Immediate, awaitable replicate for explicit "Replicate" buttons — bypasses
+// the debounce so the caller can show success/failure. eventId scopes it to one
+// event (upserts just that event's rows); omit for the whole DB.
+export function replicateNow(eventId?: number): Promise<void> {
+  return processOne(eventId)
 }
 
 // Push a car photo (JPEG data URL) to the cloud. Secret comes from the caller
