@@ -216,8 +216,11 @@ export function EventDetail() {
         </ul>
       </Dropdown>
 
-        {/* START RACE still inert (race machinery not ported). */}
-        <button type="button" className="btn-primary" disabled>
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => navigate(`/events/${event.eventId}/race`)}
+        >
           START RACE
         </button>
         <button

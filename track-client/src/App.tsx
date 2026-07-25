@@ -3,6 +3,7 @@ import { EventsList } from './pages/EventsList'
 import { EventDetail } from './pages/EventDetail'
 import { CarDetail } from './pages/CarDetail'
 import { Welcome } from './pages/Welcome'
+import { Race } from './pages/Race'
 import { SerialEmulator } from './pages/SerialEmulator'
 import './App.scss'
 
@@ -24,6 +25,7 @@ export function App() {
           <Route path="/events-list" element={<EventsList />} />
           <Route path="/events/:eventId" element={<EventDetail />} />
           <Route path="/events/:eventId/welcome" element={<Welcome />} />
+          <Route path="/events/:eventId/race" element={<Race />} />
           <Route path="/car/:carId" element={<CarDetail />} />
           <Route path="/emulator" element={<SerialEmulator />} />
           <Route path="*" element={<Navigate to="/events-list" replace />} />

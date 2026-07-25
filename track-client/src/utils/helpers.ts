@@ -17,3 +17,12 @@ export function resultsSorter(a: Result, b: Result): number {
 export function formatTime(time: number): string {
   return time === 10 ? 'DNF' : time.toFixed(4)
 }
+
+// Lane vocabulary (EventCtrl.laneColors, 1-based). Names are used for the
+// "<color> Lane" fallback when a lane has no assigned car.
+export const LANE_COLORS: Record<number, string> = {
+  1: 'Blue',
+  2: 'Yellow',
+  3: 'Green',
+  4: 'Red',
+}

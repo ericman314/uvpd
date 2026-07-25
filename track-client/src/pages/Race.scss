@@ -1,0 +1,419 @@
+/* Race screen (pages/Race.tsx), ported from race.html + main.css. Full-screen
+   projector view. The NOW RACING band collapses (431px→125px) when a race is
+   RACING/ENDED via the .collapse-now-racing class; the DNF fade, winner pulse,
+   and place pop-in are the three ported keyframes. Lanes are 4 equal columns. */
+
+.Race.fullpage-wrapper {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 1000;
+
+  &.error {
+    color: crimson;
+    padding: 20px;
+  }
+}
+
+.Race .fullpage {
+  position: relative;
+  margin: 0 auto;
+  background: #f7f0e0;
+  text-align: center;
+  height: 100%;
+  max-width: 1280px;
+  font-family: "Exo 2", sans-serif;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+/* Four equal lane columns (replaces bootstrap .col-xs-3 float grid). */
+.Race .lane-row {
+  display: flex;
+}
+.Race .lane-row > div {
+  width: 25%;
+  padding: 0 15px;
+  box-sizing: border-box;
+}
+
+/* NOW RACING band with the lane-color gradient stripes. */
+.Race .now-racing {
+  width: 100%;
+  z-index: 200;
+  position: absolute;
+  /* Clip the collapsing band so the car images (bottom of each lane) are cut at
+     the band edge. The place badge escapes this clip via position:absolute +
+     z-index (it's lifted out of the band's overflow); see .result-place-wrapper. */
+  overflow: hidden;
+  height: 429px;
+  border: solid 1px black;
+
+  /* After the collapse settles, allow the place badge to hang below the band.
+     Toggled from Race.tsx (bandOverflowVisible) so images stay clipped while the
+     band is actually moving. */
+  &.overflow-visible {
+    overflow: visible;
+  }
+  box-shadow: 2px 2px 3px 1px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(
+    to right,
+    #90caf9 0%,
+    #90caf9 25%,
+    #ffeb3b 25%,
+    #ffeb3b 50%,
+    #8bc34a 50%,
+    #8bc34a 75%,
+    #e57373 75%,
+    #e57373 100%
+  );
+  transition: height 0.3s linear;
+}
+
+.Race .now-racing h1,
+.Race .on-deck h1 {
+  background: #37474f;
+  color: white;
+  border-bottom: solid 1px black;
+  margin: 0;
+  padding: 14px 0;
+}
+.Race .now-racing h1 {
+  position: relative;
+  top: 0;
+  transition: top 0.3s linear;
+}
+
+.Race .now-racing-section {
+  top: 0;
+  position: relative;
+  transition: top 0.3s linear;
+}
+
+.Race .now-racing-section-image img {
+  width: 290px;
+  height: 217px;
+  max-width: 100%;
+  opacity: 1;
+  transition: opacity 0.3s linear;
+}
+
+/* Collapse (race started/ended): shrink band, slide title + lanes up, fade
+   photos, tighten the name spacing. */
+.Race .now-racing.collapse-now-racing {
+  height: 123px;
+}
+.Race .now-racing.collapse-now-racing h1 {
+  top: -80px;
+}
+.Race .collapse-now-racing .now-racing-section {
+  top: -100px;
+}
+.Race .collapse-now-racing .now-racing-section-image img {
+  opacity: 0;
+}
+.Race .collapse-now-racing .now-racing-section .name h2 {
+  margin-bottom: -7px;
+}
+.Race .collapse-now-racing .now-racing-section .name h3 {
+  margin-top: -7px;
+  margin-bottom: 17px;
+}
+
+/* Car name / nickname, truncated. */
+.Race .name {
+  color: #333;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.Race .name h2 {
+  margin-top: 0.62em;
+  margin-bottom: 0.5em;
+  font-size: 30px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.Race .name h3 {
+  font-size: 24px;
+  margin-top: 0.5em;
+  margin-bottom: 0.25em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #444;
+}
+
+/* Timers — white italic with heavy black outline. */
+.Race .time-countdown,
+.Race .time-final {
+  color: white;
+  position: relative;
+  top: 0px;
+  line-height: 0;
+  font-size: 40pt;
+  font-style: italic;
+  font-weight: 600;
+  text-shadow:
+    3px 3px 1px black,
+    -2px -2px 0 black,
+    2px -2px 0 black,
+    -2px 2px 0 black,
+    2px 0 0 black,
+    -2px 0 0 black,
+    0 2px 0 black,
+    0 -2px 0 black;
+}
+
+/* DNF fade-out: applied when a lane is still counting as the race ENDS. */
+.Race .time-countdown-fade {
+  animation: race-countdown-fade-out 1s forwards;
+}
+@keyframes race-countdown-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* Winner (place 1) pulse. */
+.Race .time-final-winner {
+  color: yellow;
+  animation: race-final-pulse 1s infinite;
+}
+@keyframes race-final-pulse {
+  0% {
+    transform: scale(1.05);
+  }
+  10% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+/* Place badge. */
+.Race .result-place-wrapper {
+  color: #fff;
+  display: block;
+  height: 72px;
+  width: 60px;
+  border-top-right-radius: 25px;
+  border: solid black 1px;
+  text-align: center;
+  background: #0007;
+  position: relative;
+  top: -35px;
+  line-height: 66px;
+  left: -15px;
+  font-size: 51pt;
+  font-style: italic;
+  text-shadow:
+    1px 0 0 black,
+    -1px 0 0 black,
+    0 1px 0 black,
+    0 -1px 0 black,
+    1px 1px 0 black,
+    2px 2px 1px black;
+}
+.Race .result-place-show {
+  animation: race-place-pop 0.5s cubic-bezier(0.57, 2.5, 0.62, 1);
+  transform-origin: 30px 30px;
+}
+@keyframes race-place-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.Race .pinStateWarning {
+  line-height: 0;
+  font-size: 36pt;
+  color: red;
+  text-shadow:
+    2px 0 1px black,
+    -2px 0 1px black,
+    0 -2px 1px black,
+    0 2px 1px black;
+}
+
+/* ON DECK block, scaled down and positioned below. */
+.Race .on-deck {
+  position: relative;
+  top: 440px;
+  transform: scale(0.9);
+  transform-origin: 50% 0;
+  background: #ddd;
+  border: solid 1px black;
+  box-shadow: 2px 2px 3px 1px rgba(0, 0, 0, 0.5);
+  padding-bottom: 11px;
+  h2 {
+    margin: 0.62em auto;
+  }
+}
+.Race .on-deck-section img {
+  max-width: 100%;
+}
+
+/* Instant-replay overlay (ported from #instant-replay). Full-screen black layer
+   below the standings; JS toggles .shown, CSS fades opacity 0<->1 over 0.5s.
+   The video feed is deferred, so for now this is just the black backdrop. */
+.Race .instant-replay {
+  position: fixed;
+  top: 125px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background: black;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+.Race .instant-replay.shown {
+  opacity: 1;
+  pointer-events: initial;
+}
+
+/* Current standings (ENDED). */
+.Race .current-standings {
+  z-index: 300;
+  position: absolute;
+  text-align: right;
+  top: 220px;
+  left: 25px;
+  font-size: 20pt;
+}
+.Race .current-standings .standing-wrapper {
+  margin: 3px;
+  height: 40px;
+  /* Fly in from the left; rows 7+ (second column) fly in from the right. */
+  animation: standing-fly-in-left 0.3s ease-out both;
+}
+/* Rows 7-12 wrap into a second column beside the first. */
+.Race .current-standings .standing-wrapper:nth-child(n + 7) {
+  position: relative;
+  top: -258px;
+  left: 660px;
+  animation-name: standing-fly-in-right;
+}
+
+@keyframes standing-fly-in-left {
+  from {
+    transform: translateX(-150px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes standing-fly-in-right {
+  from {
+    transform: translateX(150px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.Race .standing-place {
+  display: inline-block;
+  width: 36px;
+  background: #ffff0081;
+  color: black;
+  text-align: center;
+  border: solid black 1px;
+  border-right: none;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+.Race .standing-name {
+  display: inline-block;
+  width: 300px;
+  padding-left: 6px;
+  color: #ddd;
+  background: #0c0c508a;
+  border-top: solid black 1px;
+  border-bottom: solid black 1px;
+  white-space: nowrap;
+  position: relative;
+  top: 9px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+
+  span {
+    color: white;
+  }
+  span.standing-nickname {
+    font-size: 14pt;
+    color: #ddd;
+  }
+}
+.Race .standing-time {
+  display: inline-block;
+  width: 220px;
+  color: white;
+  background: #0c0c508a;
+  border: solid black 1px;
+  border-left: none;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  text-align: left;
+  white-space: nowrap;
+  // padding: 0 10px;
+  box-sizing: border-box;
+}
+
+/* Up-next bar pinned to the bottom. */
+.Race .racing-next {
+  position: fixed;
+  z-index: 300;
+  width: 100%;
+  max-width: 1280px;
+  bottom: 0;
+  color: #f7f0e0;
+  background: rgba(0, 0, 0, 0.5);
+
+  h2 {
+    font-size: 30px;
+    margin-top: 1px;
+    margin-bottom: 5px;
+  }
+}
+
+.Race .serial-warning {
+  position: absolute;
+  z-index: 400;
+  top: 0;
+  left: 0;
+  background: red;
+  color: black;
+  border: solid black 1px;
+  padding: 2px;
+}
+
+/* Lane colors (shared vocab, but scoped copy for the up-next spans). */
+.Race .lane-color-1 {
+  color: #90caf9;
+}
+.Race .lane-color-2 {
+  color: #ffeb3b;
+}
+.Race .lane-color-3 {
+  color: #8bc34a;
+}
+.Race .lane-color-4 {
+  color: #e57373;
+}
