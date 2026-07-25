@@ -265,8 +265,8 @@
 }
 
 /* Instant-replay overlay (ported from #instant-replay). Full-screen black layer
-   below the standings; JS toggles .shown, CSS fades opacity 0<->1 over 0.5s.
-   The video feed is deferred, so for now this is just the black backdrop. */
+   below the standings, holding the finish-line camera; JS toggles .shown, CSS
+   fades opacity 0<->1 over 0.5s. See race/useInstantReplay.ts. */
 .Race .instant-replay {
   position: fixed;
   top: 125px;
@@ -278,10 +278,34 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.5s;
+  /* The overlay spans the viewport but the stage is a centered 1280px, so center
+     the fixed-size video here rather than letting it sit at the left edge. */
+  display: flex;
+  justify-content: center;
 }
 .Race .instant-replay.shown {
   opacity: 1;
   pointer-events: initial;
+}
+/* Fixed size — NOT a percentage, which would grow/shrink the replay with the
+   window height. 1280x720 matches both the .fullpage stage width and the
+   CAPTURE_WIDTH/HEIGHT the recorder requests (race/useInstantReplay.ts).
+   object-fit:contain letterboxes if the camera hands back a different ratio,
+   rather than cropping the finish line. */
+.Race .instant-replay video {
+  display: block;
+  width: 1280px;
+  height: 720px;
+  max-width: 100%;
+  object-fit: contain;
+}
+/* Camera/recorder trouble: a corner note, never anything that covers the race. */
+.Race .instant-replay .replay-error {
+  position: absolute;
+  bottom: 10px;
+  left: 15px;
+  color: #ff8a80;
+  font-size: 12pt;
 }
 
 /* Current standings (ENDED). */

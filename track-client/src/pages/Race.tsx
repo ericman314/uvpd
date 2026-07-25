@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useRace } from '../race/useRace'
+import { useInstantReplay } from '../race/useInstantReplay'
 import { onDeckCar, racingCar } from '../race/scheduler'
 import type { Car } from '../api/types'
 import { formatTime } from '../utils/helpers'
@@ -16,8 +17,8 @@ function carImage(car: Car | undefined): string {
 // ENDED standings list, and the ON DECK preview. The collapse/fade motion is
 // CSS-driven (class toggles keyed off status); see Race.scss.
 //
-// Out of this first pass (clean seams left): achievements, instant replay, and
-// the defer dropdown.
+// Out of this first pass (clean seams left): achievements and the defer
+// dropdown.
 
 // Standings fly-in schedule (EventCtrl.computeStandings $timeout): the first row
 // appears 8s after the race ends, then one every 100ms.
@@ -52,6 +53,10 @@ export function Race() {
     getRacingName,
     error,
   } = race
+
+  // Finish-line camera: records each race, replays it in slow motion when the
+  // race ends. Driven entirely by `status`.
+  const replay = useInstantReplay(status)
 
   const collapsed = status === 'RACING' || status === 'ENDED'
 
@@ -172,12 +177,13 @@ export function Race() {
           </div>
         </div>
 
-        {/* Instant-replay overlay. For now just a black fade — the video feed
-            is deferred. Shown (faded in) whenever a race is in progress or just
-            ended, matching Angular's showVideo/hideVideo broadcasts. */}
-        <div
-          className={`instant-replay${status !== 'READY' ? ' shown' : ''}`}
-        />
+        {/* Instant-replay overlay: black backdrop holding the finish-line
+            camera. Faded in while a race runs (live feed) and held through the
+            slow-motion replay after it ends — Angular's showVideo/hideVideo. */}
+        <div className={`instant-replay${status !== 'READY' ? ' shown' : ''}`}>
+          <video ref={replay.videoRef} muted playsInline />
+          {replay.error && <div className="replay-error">{replay.error}</div>}
+        </div>
 
         {/* CURRENT STANDINGS (ENDED only) */}
         {status === 'ENDED' && standings.length > 0 && (
